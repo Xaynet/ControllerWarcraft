@@ -45,7 +45,9 @@ retro-compatibili — un file che ha solo `activeProfile` continua a funzionare)
     "ascension": "ascension",
     "wow": "retail",
     "wowclassic": "classic"
-  }
+  },
+  "companionEnabled": false,           // Fase 4: legge (sola lettura) lo stato dal companion addon
+  "companionSavedVariablesPath": ""    // percorso del file SavedVariables del companion
 }
 ```
 
@@ -58,8 +60,12 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
 - **CLI (solo per questa esecuzione)** — `cwapp --profile classic`.
 - **Elenco** — `cwapp --list`.
 
-## Schema del profilo (v1.1)
+## Schema del profilo (v1.2)
 
+> **v1.2 (Fase 4):** aggiunto `radialMenu` (radial menu overlay). I file **v1.0/v1.1** restano
+> validi: se il campo manca, il radial è semplicemente disattivato (default `enabled:false`,
+> `trigger:"None"`), quindi il comportamento è identico a prima.
+>
 > **v1.1 (Fase 3):** aggiunti `mouselook.curve` (curva di sensibilità) e il quarto layer
 > `Shoulder_LBRB`. I file **v1.0** restano validi: i campi nuovi hanno default retro-compatibili
 > (`curve` assente → `Linear`, cioè identico a prima; nessuna voce `Shoulder_LBRB` → quel layer è
@@ -103,7 +109,17 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
     { "button": "X", "layer": "Shoulder_RB",   "bind": { "key": "D1", "shift": false, "ctrl": true,  "alt": false } },
     { "button": "X", "layer": "Shoulder_LBRB", "bind": { "key": "D1", "shift": true,  "ctrl": true,  "alt": false } }
     // …
-  ]
+  ],
+
+  "radialMenu": {                  // radial menu overlay (Fase 4). Disattivo per default.
+    "enabled": false,              // true per attivarlo
+    "trigger": "None",             // None | LeftThumb (L3) | RightThumb (R3): pulsante da tenere premuto
+    "selectDeadzone": 0.4,         // ampiezza min. stick per selezionare un settore (sotto = annulla)
+    "items": [                     // voci in senso orario dall'alto; ognuna invia UN SOLO keybind
+      { "label": "Cavalcatura", "bind": { "key": "F1", "shift": false, "ctrl": false, "alt": false } }
+      // …
+    ]
+  }
 }
 ```
 
@@ -115,11 +131,13 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
   sono gestiti dall'engine e non compaiono in `abilities`.)
 - `layer` (stato modificatori): `Base`, `Shoulder_LB` (LB tenuto), `Shoulder_RB` (RB tenuto),
   `Shoulder_LBRB` (LB+RB tenuti insieme — 4° layer, Fase 3). Priorità: LB+RB > LB > RB > Base.
-- `key` (scancode di tastiera, per **nome**): `D1`..`D0`, `A`..`Z`, `Space`, `Tab`, `Escape`,
-  `Minus`, `Equals`, `LeftShift`, `LeftControl`, `LeftAlt`, `None` (= nessun binding).
+- `key` (scancode di tastiera, per **nome**): `D1`..`D0`, `A`..`Z`, `F1`..`F12`, `Space`, `Tab`,
+  `Escape`, `Minus`, `Equals`, `LeftShift`, `LeftControl`, `LeftAlt`, `None` (= nessun binding).
+  (`F1`-`F12` aggiunti in Fase 4, comodi per le utility del radial.)
 - `shift`/`ctrl`/`alt`: modificatori premuti insieme al tasto.
 - `mouselook.curve.type`: `Linear` (default, = comportamento storico), `Power` (`y=x^exp`),
   `Exponential` (accelerazione normalizzata). `Linear` ignora `exponent`.
+- `radialMenu.trigger`: `None` (default, radial off), `LeftThumb` (L3), `RightThumb` (R3).
 
 > **Mapping rigorosamente 1:1** (ANALISI §8): un keybind = un tasto (più modificatori). Lo schema
 > non prevede sequenze, macro, ripetizioni o timer. Nessuna automazione.
@@ -147,3 +165,40 @@ Differenze **documentate** tra i preset (le uniche che dipendono davvero dalla v
 
 I keybind di action bar sono identici tra i preset: la differenza di targeting tra versioni si
 riflette nel **flusso di gioco**, non in tasti diversi. Personalizza pure ogni profilo dalla GUI.
+
+## Preset di classe (Fase 4) — `classes/`
+
+I preset di classe (`profiles/classes/*.json`, es. `warrior.json`, `mage.json`, `hunter.json`) sono
+**override** applicabili *sopra* un profilo di versione. Non sono profili completi: contengono solo
+`abilityOverrides` (sostituzioni/aggiunte alla tabella `abilities`, per `button × layer`) ed
+eventualmente un `radialMenu` tarato sulla classe. Si applicano **dalla GUI** (menu *Preset di
+classe* → *Applica*): il risultato è un normale profilo utente da salvare. A runtime non esiste
+alcuna logica speciale — resta tutto 1:1.
+
+```jsonc
+{
+  "schemaVersion": "1.0",
+  "name": "Warrior",
+  "className": "Warrior",
+  "gameVersion": "",               // "" = qualsiasi versione (informativo/di filtro)
+  "description": "…assunzioni sui keybind…",
+  "abilityOverrides": [            // sostituisce/aggiunge voci della tabella abilities
+    { "button": "DPadUp", "layer": "Shoulder_LBRB", "bind": { "key": "F7" } }
+  ],
+  "radialMenu": {                  // opzionale: se presente, sostituisce il radial del profilo base
+    "enabled": true, "trigger": "LeftThumb", "selectDeadzone": 0.4,
+    "items": [ { "label": "Cavalcatura", "bind": { "key": "F1" } } ]
+  }
+}
+```
+
+> **Assunzioni sui keybind.** Nel modello external-only emettiamo solo tasti: quali abilità stiano
+> dietro gli slot/tasti si imposta **in gioco**. Ogni preset di classe documenta nella `description`
+> quale tasto lega a quale utility (es. `F1=Cavalcatura`). Sono suggerimenti: modificali dalla GUI.
+
+## Companion addon (Fase 4) — opzionale
+
+Il file SavedVariables del [companion addon](../addon/ControllerWarcraftCompanion/README.md) è letto
+dall'App **solo se** `companionEnabled:true` in `settings.json` (con `companionSavedVariablesPath`).
+È **sola lettura** e serve solo come contesto (overlay): non guida mai l'input. Vedi il README
+dell'addon per installazione, campi esposti e limiti (i SavedVariables non sono real-time).

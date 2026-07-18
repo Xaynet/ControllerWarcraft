@@ -20,6 +20,9 @@
          cosi' il ProfileManager (PresetProfilesDir = <exe>/profiles) li trova. -->
     <None Include="..\..\profiles\*.json" Link="profiles\%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
+    <!-- Preset di classe (Fase 4): copiati in profiles/classes/. -->
+    <None Include="..\..\profiles\classes\*.json" Link="profiles\classes\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

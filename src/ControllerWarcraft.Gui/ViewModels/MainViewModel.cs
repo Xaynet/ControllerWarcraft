@@ -39,8 +39,11 @@ public sealed class MainViewModel : ObservableObject
         SetActiveCommand = new RelayCommand(SetActive, () => SelectedProfile is not null);
         SaveSettingsCommand = new RelayCommand(SaveSettings);
         AddProcessMapRowCommand = new RelayCommand(() => ProcessMap.Add(new ProcessMapRowViewModel()));
+        AddRadialItemCommand = new RelayCommand(() => RadialItems.Add(new RadialItemRowViewModel()));
+        ApplyClassPresetCommand = new RelayCommand(ApplyClassPreset, () => SelectedClassPreset is not null);
 
         LoadSettingsIntoProcessMap();
+        RefreshClassPresetList();
         RefreshProfileList();
     }
 
@@ -104,6 +107,42 @@ public sealed class MainViewModel : ObservableObject
 
     public ObservableCollection<AbilityRowViewModel> Abilities { get; } = new();
 
+    // -------------------------------------------------------------- radial menu (Fase 4)
+
+    /// <summary>Voci del radial menu editabili (etichetta + un solo keybind).</summary>
+    public ObservableCollection<RadialItemRowViewModel> RadialItems { get; } = new();
+
+    public bool RadialEnabled
+    {
+        get => _current.RadialMenu.Enabled;
+        set { _current.RadialMenu.Enabled = value; OnPropertyChanged(); }
+    }
+
+    public RadialTrigger RadialTrigger
+    {
+        get => _current.RadialMenu.Trigger;
+        set { _current.RadialMenu.Trigger = value; OnPropertyChanged(); }
+    }
+
+    public double RadialSelectDeadzone
+    {
+        get => _current.RadialMenu.SelectDeadzone;
+        set { _current.RadialMenu.SelectDeadzone = value; OnPropertyChanged(); }
+    }
+
+    // -------------------------------------------------------------- preset di classe (Fase 4)
+
+    /// <summary>Preset di classe disponibili (applicabili sopra il profilo corrente).</summary>
+    public ObservableCollection<ClassPresetInfo> ClassPresets { get; } = new();
+
+    private ClassPresetInfo? _selectedClassPreset;
+    public ClassPresetInfo? SelectedClassPreset
+    {
+        get => _selectedClassPreset;
+        // CommandManager richiama automaticamente CanExecute di ApplyClassPresetCommand.
+        set => SetField(ref _selectedClassPreset, value);
+    }
+
     // -------------------------------------------------------------- impostazioni globali (Fase 3)
 
     public bool ShowOverlay
@@ -145,6 +184,8 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand SetActiveCommand { get; }
     public RelayCommand SaveSettingsCommand { get; }
     public RelayCommand AddProcessMapRowCommand { get; }
+    public RelayCommand AddRadialItemCommand { get; }
+    public RelayCommand ApplyClassPresetCommand { get; }
 
     // -------------------------------------------------------------- logica (profili)
 
@@ -194,7 +235,21 @@ public sealed class MainViewModel : ObservableObject
         foreach (var a in loaded.Abilities.OrderBy(a => a.Button).ThenBy(a => a.Layer))
             Abilities.Add(new AbilityRowViewModel(a));
 
+        RebuildRadialFromCurrent();
+
         Status = $"Caricato: {loaded.Name}  [{info.Source}]  ({info.FilePath})";
+    }
+
+    /// <summary>Ricostruisce i controlli del radial menu dal profilo corrente (dopo load/apply preset).</summary>
+    private void RebuildRadialFromCurrent()
+    {
+        RadialItems.Clear();
+        foreach (var item in _current.RadialMenu.Items)
+            RadialItems.Add(new RadialItemRowViewModel(item));
+
+        OnPropertyChanged(nameof(RadialEnabled));
+        OnPropertyChanged(nameof(RadialTrigger));
+        OnPropertyChanged(nameof(RadialSelectDeadzone));
     }
 
     private void ReloadCurrent()
@@ -209,6 +264,9 @@ public sealed class MainViewModel : ObservableObject
         // Riporta la tabella editata nel profilo.
         _current.Abilities = Abilities.Select(r => r.ToBinding()).ToList();
         _current.InvalidateIndex();
+
+        // Riporta le voci del radial menu (etichetta + un solo keybind, 1:1).
+        _current.RadialMenu.Items = RadialItems.Select(r => r.ToItem()).ToList();
 
         // Salva sempre nella cartella utente (i preset restano sola lettura).
         var stem = SelectedProfile.Source == ProfileSource.Preset
@@ -230,6 +288,42 @@ public sealed class MainViewModel : ObservableObject
         _manager.SaveSettings(_settings);
         ActiveProfileStem = SelectedProfile.FileName;
         Status = $"Profilo attivo impostato: {SelectedProfile.FileName}. Riavvia l'App per applicarlo.";
+    }
+
+    // -------------------------------------------------------------- logica (preset di classe)
+
+    private void RefreshClassPresetList()
+    {
+        ClassPresets.Clear();
+        foreach (var c in _manager.ListClassPresets())
+            ClassPresets.Add(c);
+    }
+
+    /// <summary>
+    /// Applica il preset di classe selezionato SOPRA il profilo corrente (in memoria): sostituisce
+    /// gli override di abilità e, se presente, il radial menu. Non salva: l'utente rivede il
+    /// risultato e poi preme "Salva" per scriverlo come profilo utente.
+    /// </summary>
+    private void ApplyClassPreset()
+    {
+        if (SelectedClassPreset is null) return;
+
+        var preset = _manager.LoadClassPreset(SelectedClassPreset.FileName);
+        if (preset is null)
+        {
+            Status = $"Impossibile caricare il preset di classe '{SelectedClassPreset.FileName}'.";
+            return;
+        }
+
+        preset.ApplyTo(_current);
+
+        // Riflette il merge nei controlli: tabella abilità + radial.
+        Abilities.Clear();
+        foreach (var a in _current.Abilities.OrderBy(a => a.Button).ThenBy(a => a.Layer))
+            Abilities.Add(new AbilityRowViewModel(a));
+        RebuildRadialFromCurrent();
+
+        Status = $"Preset di classe applicato: {preset.Name}. Rivedi e premi 'Salva' per scriverlo.";
     }
 
     // -------------------------------------------------------------- logica (impostazioni globali)

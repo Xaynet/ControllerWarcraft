@@ -1,9 +1,15 @@
-# ControllerWarcraft — Overlay (Fase 3)
+# ControllerWarcraft — Overlay (Fase 3 + 4)
 
 Overlay **indicatore di modalità**: una finestra WPF trasparente, always-on-top e **click-through**
 che mostra la modalità corrente (Movimento/Combattimento ↔ Cursore), il **layer** attivo
-(Base / +LB / +RB / +LB+RB) e il profilo caricato. È l'anello "Overlay" di
-[ANALISI.md §5](../../ANALISI.md).
+(Base / +LB / +RB / +LB+RB), il profilo caricato e — se il companion è attivo — una riga di
+**contesto** (es. bersaglio). È l'anello "Overlay" di [ANALISI.md §5](../../ANALISI.md).
+
+**Fase 4 — radial menu:** una seconda finestra (`RadialMenuWindow`, stesso stile click-through)
+disegna un menu radiale on-screen quando l'utente tiene premuto il trigger (L3/R3). I settori e le
+etichette sono resi dinamicamente e il settore selezionato dallo stick destro è evidenziato. È solo
+un **indicatore visivo**: la selezione e l'invio del keybind (uno solo, 1:1) restano interamente nel
+`MappingEngine` dell'App.
 
 > Non ruba il focus al gioco e non intercetta il mouse: gli stili estesi
 > `WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW` fanno passare i click
@@ -41,10 +47,22 @@ cambiato. Se la UI non è disponibile (ambiente headless/CI) `Start` fallisce in
 ## File
 
 ```
-OverlayState.cs          DTO immutabile (modalità/testi/pausa/profilo) + enum OverlayMode
-OverlayWindow.xaml(.cs)  finestra trasparente + colori per modalità + posizionamento in alto-centro
-NativeOverlay.cs         P/Invoke SetWindowLong: rende l'handle click-through e non-attivabile
-ModeOverlayController.cs host STA + Dispatcher, API thread-safe con dedup
+OverlayState.cs           DTO immutabile (modalità/testi/pausa/profilo/companion) + enum OverlayMode
+OverlayWindow.xaml(.cs)   finestra trasparente + colori per modalità + posizionamento in alto-centro
+NativeOverlay.cs          P/Invoke SetWindowLong: rende l'handle click-through e non-attivabile
+ModeOverlayController.cs  host STA + Dispatcher, API thread-safe con dedup
+RadialOverlayState.cs     DTO del radial (visibile/etichette/indice selezionato)  — Fase 4
+RadialMenuWindow.xaml(.cs) finestra del radial: disegna settori + etichette, evidenzia la selezione — Fase 4
+RadialMenuController.cs   host STA + Dispatcher per il radial (come ModeOverlayController) — Fase 4
+```
+
+Il radial overlay ha la stessa API di controllo dell'indicatore di modalità:
+
+```csharp
+using var radial = new RadialMenuController();
+radial.Start();
+radial.Update(new RadialOverlayState(visible: true, labels, selectedIndex: 2)); // dedup + hide se non visibile
+radial.Dispose();
 ```
 
 ## Disabilitare l'overlay

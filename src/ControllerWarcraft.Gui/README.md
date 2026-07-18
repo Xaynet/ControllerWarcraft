@@ -1,4 +1,4 @@
-# ControllerWarcraft — Gui (Fase 2: editor di profili)
+# ControllerWarcraft — Gui (editor di profili, Fase 2 → 4)
 
 Applicazione **WPF** per selezionare il profilo attivo, vedere/modificare le mappature e le
 curve di sensibilità, e salvare. È l'anello "GUI Configuratore" di [ANALISI.md §5](../../ANALISI.md)
@@ -19,6 +19,10 @@ ed è costruita sullo stack consigliato in [§6](../../ANALISI.md) (C#/.NET + WP
 - **Editing binding di sistema** (Fase 3) — Salto / Tab-target / Annulla ora modificabili.
 - **Impostazioni globali** (Fase 3) — overlay on/off, auto-switch profilo e mappa
   `processo → profilo`, con salvataggio in `settings.json`.
+- **Radial menu** (Fase 4) — attiva/disattiva, scegli il trigger (L3/R3), la soglia di selezione e
+  le **voci** (etichetta + un solo keybind). Ogni voce = un tasto (1:1): nessuna sequenza.
+- **Preset di classe** (Fase 4) — scegli un preset (Warrior/Mage/Hunter/…) e premi *Applica*: gli
+  override (abilità + radial) vengono uniti sul profilo corrente. Rivedi e poi *Salva*.
 - **Salva** — scrive il profilo nella cartella utente (`%APPDATA%/ControllerWarcraft/profiles/`),
   lasciando i preset del repo intatti.
 - **Imposta come attivo** — aggiorna `settings.json`; l'App lo caricherà al prossimo avvio.
@@ -46,6 +50,7 @@ ViewModels/  MainViewModel            elenco profili, impostazioni bindabili, co
              AbilityRowViewModel      riga editabile della tabella abilità
              KeybindEditorViewModel   adattatore editabile per i Keybind di sistema (record struct)
              ProcessMapRowViewModel   riga della mappa auto-switch processo → profilo
+             RadialItemRowViewModel   riga editabile di una voce del radial menu (Fase 4)
 MainWindow.xaml(.cs)                  UI: selezione + pannelli impostazioni + DataGrid
 App.xaml(.cs)                         bootstrap WPF
 ```
@@ -53,9 +58,12 @@ App.xaml(.cs)                         bootstrap WPF
 Il modello dati (schema profilo, `ProfileManager`, preset) vive nel Core condiviso, quindi GUI e
 App restano sempre allineate sul formato.
 
-## Limiti attuali (Fase 3 → Fase 4)
+## Limiti attuali
 
 - I **tasti di movimento** (WASD) restano modificabili solo nel JSON.
 - Nessun avvio/arresto del runtime dalla GUI: si lancia `cwapp` separatamente. Integrazione
   (tray, start/stop) prevista nelle fasi successive.
-- L'overlay è configurabile (on/off) ma non ha ancora il **radial menu** (Fase 4).
+- L'ordine dei settori del radial segue l'ordine della lista di voci: non c'è ancora un editor
+  grafico (drag) della disposizione.
+- Il percorso dei SavedVariables del companion si imposta a mano in `settings.json`
+  (`companionSavedVariablesPath`).

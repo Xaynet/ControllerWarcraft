@@ -52,6 +52,12 @@ public sealed class ProfileManager
     public string PresetProfilesDir { get; }
     public string SettingsPath { get; }
 
+    /// <summary>Preset di classe versionati accanto all'eseguibile (<c>&lt;exe&gt;/profiles/classes</c>).</summary>
+    public string PresetClassesDir { get; }
+
+    /// <summary>Preset di classe creati/modificati dall'utente (<c>%APPDATA%/.../profiles/classes</c>).</summary>
+    public string UserClassesDir { get; }
+
     /// <param name="appDataDir">Override della cartella dati utente (default %APPDATA%/ControllerWarcraft). Utile ai test.</param>
     /// <param name="presetProfilesDir">Override della cartella preset (default &lt;exe&gt;/profiles).</param>
     public ProfileManager(string? appDataDir = null, string? presetProfilesDir = null)
@@ -62,6 +68,9 @@ public sealed class ProfileManager
         UserProfilesDir = Path.Combine(AppDataDir, "profiles");
         PresetProfilesDir = presetProfilesDir ?? Path.Combine(AppContext.BaseDirectory, "profiles");
         SettingsPath = Path.Combine(AppDataDir, "settings.json");
+
+        PresetClassesDir = Path.Combine(PresetProfilesDir, "classes");
+        UserClassesDir = Path.Combine(UserProfilesDir, "classes");
     }
 
     // -------------------------------------------------------------- scoperta profili
@@ -185,6 +194,79 @@ public sealed class ProfileManager
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         File.WriteAllText(path, Serialize(profile));
+    }
+
+    // -------------------------------------------------------------- preset di classe (Fase 4)
+
+    /// <summary>
+    /// Elenca i preset di classe disponibili (preset versionati + utente). A parità di stem, la
+    /// versione utente sostituisce quella versionata. Ordina per nome. Lista vuota se la cartella
+    /// non esiste — i preset di classe sono del tutto opzionali.
+    /// </summary>
+    public IReadOnlyList<ClassPresetInfo> ListClassPresets()
+    {
+        var byStem = new Dictionary<string, ClassPresetInfo>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var info in ScanClasses(PresetClassesDir))
+            byStem[info.FileName] = info;
+        foreach (var info in ScanClasses(UserClassesDir))
+            byStem[info.FileName] = info;
+
+        return byStem.Values.OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    private IEnumerable<ClassPresetInfo> ScanClasses(string dir)
+    {
+        if (!Directory.Exists(dir)) yield break;
+
+        foreach (var path in Directory.EnumerateFiles(dir, "*.json"))
+        {
+            var stem = Path.GetFileNameWithoutExtension(path);
+            string name = stem, className = "", gameVersion = "";
+            try
+            {
+                var p = ReadClassPresetFile(path);
+                if (p is not null)
+                {
+                    name = string.IsNullOrWhiteSpace(p.Name) ? stem : p.Name;
+                    className = p.ClassName;
+                    gameVersion = p.GameVersion;
+                }
+            }
+            catch { /* file illeggibile: si mostra comunque con lo stem */ }
+
+            yield return new ClassPresetInfo(name, stem, path, className, gameVersion);
+        }
+    }
+
+    /// <summary>Carica un preset di classe per stem (utente prima, poi versionato). <c>null</c> se assente.</summary>
+    public ClassPreset? LoadClassPreset(string fileStem)
+    {
+        var userPath = Path.Combine(UserClassesDir, fileStem + ".json");
+        if (File.Exists(userPath)) return ReadClassPresetFile(userPath);
+
+        var presetPath = Path.Combine(PresetClassesDir, fileStem + ".json");
+        if (File.Exists(presetPath)) return ReadClassPresetFile(presetPath);
+
+        return null;
+    }
+
+    private static ClassPreset? ReadClassPresetFile(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return JsonSerializer.Deserialize<ClassPreset>(stream, JsonOptions);
+    }
+
+    /// <summary>Salva un preset di classe nella cartella utente. Restituisce il percorso scritto.</summary>
+    public string SaveClassPreset(ClassPreset preset, string? fileStem = null)
+    {
+        Directory.CreateDirectory(UserClassesDir);
+        var stem = Slugify(fileStem ?? preset.Name);
+        if (string.IsNullOrEmpty(stem)) stem = "classe";
+
+        var path = Path.Combine(UserClassesDir, stem + ".json");
+        File.WriteAllText(path, JsonSerializer.Serialize(preset, JsonOptions));
+        return path;
     }
 
     // -------------------------------------------------------------- settings (profilo attivo)

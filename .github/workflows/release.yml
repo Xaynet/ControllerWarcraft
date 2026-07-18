@@ -4,8 +4,8 @@ name: Release
 # Pubblica i due eseguibili self-contained win-x64 single-file:
 #   - cwapp.exe  (runtime; include per referenza Core + Overlay)
 #   - cwgui.exe  (editor dei profili di remap; WPF, include Core)
-# Assembla uno zip versionato con i due exe e la cartella profiles/ condivisa,
-# poi crea la GitHub Release allegandolo.
+# Assembla uno zip versionato con i due exe, la cartella profiles/ condivisa (inclusi i preset di
+# classe in profiles/classes/) e il companion addon opzionale in addon/, poi crea la GitHub Release.
 on:
   push:
     tags:
@@ -81,6 +81,14 @@ jobs:
           # Entrambi gli exe cercano i preset in <exe>/profiles.
           New-Item -ItemType Directory -Force -Path (Join-Path $stage 'profiles') | Out-Null
           Copy-Item 'profiles/*.json' -Destination (Join-Path $stage 'profiles')
+
+          # Fase 4: preset di classe (override) in profiles/classes/.
+          New-Item -ItemType Directory -Force -Path (Join-Path $stage 'profiles/classes') | Out-Null
+          Copy-Item 'profiles/classes/*.json' -Destination (Join-Path $stage 'profiles/classes') -ErrorAction SilentlyContinue
+
+          # Fase 4: companion addon OPZIONALE (WoW/Lua). Incluso nello zip perché piccolo e
+          # self-contained; NON è richiesto per usare l'app (va copiato manualmente in Interface/AddOns).
+          Copy-Item 'addon' -Destination (Join-Path $stage 'addon') -Recurse -ErrorAction SilentlyContinue
 
           # Documentazione utile accanto ai binari.
           Copy-Item 'RELEASING.md' -Destination $stage -ErrorAction SilentlyContinue

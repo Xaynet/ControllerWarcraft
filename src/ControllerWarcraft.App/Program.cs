@@ -1,5 +1,6 @@
 using ControllerWarcraft.App.Engine;
 using ControllerWarcraft.App.Input;
+using ControllerWarcraft.Core.Companion;
 using ControllerWarcraft.Core.Profiles;
 using ControllerWarcraft.Core.Profiles.Presets;
 using ControllerWarcraft.Overlay;
@@ -96,14 +97,34 @@ if (overlayEnabled)
         Console.WriteLine("  (overlay non disponibile in questo ambiente: uso solo l'indicatore a console)");
 }
 
+// ---- Overlay radial menu (Fase 4, opzionale) -----------------------------------
+// Creato solo se il profilo ha un radial usabile e l'overlay è abilitato.
+RadialMenuController? radialOverlay = null;
+if (overlayEnabled && host.RadialUsable)
+{
+    radialOverlay = new RadialMenuController();
+    radialOverlay.Start();
+}
+
 bool autoSwitch = settings.AutoSwitchEnabled && !noAutoSwitch;
+
+// ---- Companion addon (Fase 4, opzionale, sola lettura) -------------------------
+// STRETTAMENTE OPZIONALE: lo stato letto viene solo MOSTRATO (overlay/console), mai usato
+// per guidare l'input (ANALISI §8). Se disattivato o non configurato, l'App è identica a prima.
+bool companionEnabled = settings.CompanionEnabled && !string.IsNullOrWhiteSpace(settings.CompanionSavedVariablesPath);
+CompanionState? companion = null;
+const int CompanionCheckEveryTicks = 125; // ~1s a 125 Hz (i SavedVariables non sono real-time)
+int companionCounter = 0;
+if (companionEnabled)
+    Console.WriteLine($"Companion: attivo (sola lettura) — {settings.CompanionSavedVariablesPath}");
 
 Console.WriteLine("ControllerWarcraft — App (Fase 3: UX)");
 Console.WriteLine($"Profilo: {profile.Name}  [versione gioco: {profile.GameVersion}]");
 Console.WriteLine("Collega un controller Xbox. Apri WoW (o Blocco note per un test sicuro).");
 Console.WriteLine("R3=cambia modalita' · L3=Tab-target · LB/RB/LB+RB=layer abilita' · BACK=esci.");
 Console.WriteLine($"Overlay: {(overlay?.IsRunning == true ? "attivo" : "disattivo")} · " +
-                  $"Auto-switch: {(autoSwitch ? "attivo" : "disattivo")}");
+                  $"Auto-switch: {(autoSwitch ? "attivo" : "disattivo")} · " +
+                  $"Radial: {(host.RadialUsable ? "attivo (tieni premuto il trigger)" : "disattivo")}");
 Console.WriteLine($"Modalita' iniziale: {MappingEngine.ModeLabel(host.Mode)}");
 Console.WriteLine("In attesa del controller...");
 
@@ -113,6 +134,7 @@ Console.CancelKeyPress += (_, e) =>
     e.Cancel = true;
     host.Reset();
     overlay?.Dispose();
+    radialOverlay?.Dispose();
     Console.WriteLine("\nUscita (Ctrl+C). Input rilasciati.");
     Environment.Exit(0);
 };
@@ -159,6 +181,14 @@ while (true)
         paused = settings.PauseWhenGameNotForeground && !AutoSwitchResolver.IsGameForeground(settings, proc);
     }
 
+    // ---- Companion addon: lettura periodica (sola lettura, solo per contesto) ---
+    if (companionEnabled && ++companionCounter >= CompanionCheckEveryTicks)
+    {
+        companionCounter = 0;
+        if (CompanionStateReader.TryRead(settings.CompanionSavedVariablesPath, out var read))
+            companion = read;
+    }
+
     if (paused)
     {
         if (!pausedAnnounced)
@@ -167,7 +197,8 @@ while (true)
             Console.WriteLine("  [PAUSA — gioco non in primo piano; input sospesi]");
             pausedAnnounced = true;
         }
-        PushOverlay(overlay, host, paused: true);
+        PushOverlay(overlay, host, paused: true, companion);
+        PushRadial(radialOverlay, host);
         Thread.Sleep(TickMs);
         continue;
     }
@@ -179,13 +210,15 @@ while (true)
     }
 
     host.Update(snapshot);
-    PushOverlay(overlay, host, paused: false);
+    PushOverlay(overlay, host, paused: false, companion);
+    PushRadial(radialOverlay, host);
 
     Thread.Sleep(TickMs);
 }
 
 host.Reset();
 overlay?.Dispose();
+radialOverlay?.Dispose();
 Console.WriteLine("Uscita pulita. A presto.");
 return;
 
@@ -195,7 +228,7 @@ return;
 
 // Aggiorna l'overlay (se attivo) con lo stato corrente. Il controller deduplica: nessun costo
 // se lo stato non è cambiato.
-static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool paused)
+static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool paused, CompanionState? companion)
 {
     if (overlay is null) return;
 
@@ -205,7 +238,15 @@ static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool pa
         MappingEngine.ModeLabel(host.Mode),
         MappingEngine.LayerLabel(host.Layer),
         paused,
-        host.ProfileName));
+        host.ProfileName,
+        companion?.ShortLabel ?? ""));
+}
+
+// Aggiorna l'overlay del radial menu (se attivo) con lo stato corrente. Dedup nel controller.
+static void PushRadial(RadialMenuController? radial, EngineHost host)
+{
+    if (radial is null) return;
+    radial.Update(new RadialOverlayState(host.RadialOpen, host.RadialLabels, host.RadialIndex));
 }
 
 // Serializza i preset built-in nei file JSON versionati. Non invia alcun input:
@@ -230,6 +271,9 @@ static void ListProfiles(ProfileManager manager)
     Console.WriteLine($"Overlay: {(settings.ShowOverlay ? "on" : "off")} · " +
                       $"Auto-switch: {(settings.AutoSwitchEnabled ? "on" : "off")} " +
                       $"(pausa fuori gioco: {(settings.PauseWhenGameNotForeground ? "on" : "off")})");
+    Console.WriteLine($"Companion (sola lettura): {(settings.CompanionEnabled ? "on" : "off")}" +
+                      (settings.CompanionEnabled && !string.IsNullOrWhiteSpace(settings.CompanionSavedVariablesPath)
+                          ? $" — {settings.CompanionSavedVariablesPath}" : ""));
     if (settings.AutoSwitchEnabled && settings.ProcessProfileMap.Count > 0)
     {
         Console.WriteLine("Mappa processo → profilo:");

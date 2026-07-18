@@ -45,4 +45,21 @@ public sealed class AppSettings
         ["wow"] = "retail",
         ["wowclassic"] = "classic",
     };
+
+    // ---------------------------------------------------------------- companion addon (Fase 4, punto 3)
+
+    /// <summary>
+    /// Se true, l'App legge (in sola lettura) lo stato di gioco dai SavedVariables del companion addon
+    /// e lo mostra come contesto (es. bersaglio nell'overlay). Default <b>false</b>: il companion è
+    /// STRETTAMENTE OPZIONALE e l'App funziona identica senza. Lo stato letto non guida MAI l'input
+    /// (ANALISI §8).
+    /// </summary>
+    public bool CompanionEnabled { get; set; } = false;
+
+    /// <summary>
+    /// Percorso del file SavedVariables del companion addon
+    /// (<c>…/WTF/Account/&lt;ACCOUNT&gt;/SavedVariables/ControllerWarcraftCompanion.lua</c>).
+    /// Vuoto = non configurato. Usato solo se <see cref="CompanionEnabled"/> è true.
+    /// </summary>
+    public string CompanionSavedVariablesPath { get; set; } = "";
 }

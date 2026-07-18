@@ -32,6 +32,10 @@
                        Text=""
                        Foreground="#AAFFFFFF" FontFamily="Segoe UI" FontSize="10"
                        HorizontalAlignment="Center" Margin="0,3,0,0" />
+            <TextBlock x:Name="CompanionText"
+                       Text=""
+                       Foreground="#CCFFE082" FontFamily="Segoe UI" FontSize="10"
+                       HorizontalAlignment="Center" Margin="0,2,0,0" />
         </StackPanel>
     </Border>
 </Window>

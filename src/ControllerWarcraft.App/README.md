@@ -17,6 +17,11 @@ in un'architettura modulare.
 > ([`ControllerWarcraft.Overlay`](../ControllerWarcraft.Overlay/README.md)) accanto alla console;
 > curve di sensibilità del mouselook (dal profilo); **quarto layer +LB+RB** (Shift+Ctrl); e
 > **auto-switch** del profilo in base alla finestra in primo piano, con pausa opzionale fuori gioco.
+>
+> **Fase 4 (Polish):** **radial menu** overlay (tieni premuto L3/R3 → menu radiale; muovi lo stick
+> destro verso un settore, rilascia per inviare **un solo** keybind — 1:1, nessuna sequenza);
+> **preset per classe** applicabili sul profilo dalla GUI; e **companion addon opzionale** (sola
+> lettura) il cui stato è mostrato come contesto nell'overlay (mai usato per l'input).
 
 ## Cosa fa
 
@@ -41,9 +46,9 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json` (`activePro
 dalla [GUI](../ControllerWarcraft.Gui/README.md) o a mano. Utility da riga di comando:
 
 ```powershell
-cwapp --list                 # elenca i profili disponibili (+ stato overlay/auto-switch)
+cwapp --list                 # elenca i profili disponibili (+ stato overlay/auto-switch/companion)
 cwapp --profile classic      # usa 'classic' solo per questa esecuzione
-cwapp --no-overlay           # disabilita l'overlay per questa esecuzione
+cwapp --no-overlay           # disabilita l'overlay (indicatore + radial) per questa esecuzione
 cwapp --no-autoswitch        # disabilita l'auto-switch per questa esecuzione
 cwapp --export-presets dir   # rigenera i preset JSON (nessun input inviato)
 cwapp --help
@@ -78,12 +83,28 @@ Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profile
 | D-pad Destra | Abilità (7 / …) | — |
 | D-pad Giù | Abilità (8 / …) | — |
 | D-pad Sinistra | Abilità (9 / …) | — |
-| **L3** (click stick sx) | Tab-target | — |
-| **R3** (click stick dx) | Toggle → Cursore | Toggle → Movimento |
+| **L3** (click stick sx) | Tab-target *(o trigger radial, se configurato)* | — |
+| **R3** (click stick dx) | Toggle → Cursore *(o trigger radial, se configurato)* | Toggle → Movimento |
 | Back | Uscita pulita | Uscita pulita |
 
 > Il layer si sceglie **tenendo premuto** LB e/o RB mentre si preme il pulsante abilità.
 > Priorità: **LB+RB > LB > RB > Base**.
+
+### Radial menu (Fase 4)
+
+Se il profilo ha un radial menu attivo (`radialMenu.enabled` + un `trigger` L3/R3 + almeno una voce),
+**tenendo premuto** il trigger compare un menu radiale on-screen. Muovi lo stick destro verso un
+settore per evidenziarlo e **rilascia** il trigger per inviare il keybind di quella voce. Il rilascio
+al centro (sotto la soglia) **annulla** senza inviare nulla. Ogni selezione invia **un solo** keybind
+(1:1, ANALISI §8): nessuna sequenza, nessun timer. Quando il radial usa L3/R3, quel pulsante non fa
+più Tab-target / toggle mentre il radial è attivo. Le voci si configurano nel profilo o dalla GUI.
+
+### Companion addon (Fase 4, opzionale)
+
+Con `"companionEnabled": true` e `"companionSavedVariablesPath": "…"` in `settings.json`, l'App legge
+(in **sola lettura**, ~1×/s) lo stato esposto dal [companion addon](../../addon/ControllerWarcraftCompanion/README.md)
+e lo mostra come contesto nell'overlay (es. bersaglio). **Non guida mai l'input.** Disattivo per
+default: l'App funziona identica senza.
 
 ## Configurazione lato WoW (una tantum)
 
@@ -118,13 +139,17 @@ Struttura modulare che rispecchia [ANALISI.md §5](../../ANALISI.md):
 
 ```
 (Core, condiviso con la Gui)
-  Input/     ScanCode          enum scancode di tastiera (parte dello schema JSON)
+  Input/     ScanCode          enum scancode di tastiera (parte dello schema JSON; +F1-F12 in Fase 4)
   Profiles/  Keybind           tasto + modificatori (Shift/Ctrl/Alt)
-             ActionButton      pulsanti mappabili + AbilityLayer (Base/+LB/+RB)
-             ControllerProfile schema serializzabile: movimento/mouselook/cursore/system/abilities
-             ProfileManager    carica/salva profili JSON, profilo attivo, fallback
-             AppSettings       profilo attivo persistito
+             ActionButton      pulsanti mappabili + AbilityLayer (Base/+LB/+RB/+LB+RB)
+             ControllerProfile schema serializzabile: movimento/mouselook/cursore/system/abilities/radialMenu
+             RadialMenu        RadialMenuSettings/Item + RadialTrigger (Fase 4)
+             RadialMenuResolver selezione settore pura e testabile (Fase 4)
+             ClassPreset       override per classe + merge ApplyTo (Fase 4)
+             ProfileManager    carica/salva profili e preset di classe, profilo attivo, fallback
+             AppSettings       profilo attivo + opzioni overlay/auto-switch/companion
              Presets/BuiltInProfiles  Ascension (=Fase 1) / Classic / Retail in codice
+  Companion/ CompanionState / CompanionStateReader  lettura opzionale dei SavedVariables (Fase 4)
 
 (App, runtime)
   Native/    NativeMethods     P/Invoke XInput + SendInput (usa Core.ScanCode)

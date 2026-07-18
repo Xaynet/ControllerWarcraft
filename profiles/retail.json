@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "name": "Retail",
   "gameVersion": "Retail",
   "description": "Preset Retail WoW. Stesso schema action bar (1-9 / Shift+1..9 / Ctrl+1..9 / Shift+Ctrl+1..9). Camera di default piu' reattiva (SensX=20, SensY=15) con curva Power (controllo fine al centro). Nota: Retail ha il soft-target; il Tab-target (L3) resta disponibile come alternativa.",
@@ -406,5 +406,11 @@
         "alt": false
       }
     }
-  ]
+  ],
+  "radialMenu": {
+    "enabled": false,
+    "trigger": "None",
+    "selectDeadzone": 0.4,
+    "items": []
+  }
 }

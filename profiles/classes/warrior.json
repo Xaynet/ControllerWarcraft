@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Warrior",
+  "className": "Warrior",
+  "gameVersion": "",
+  "description": "Preset di classe Warrior (melee) — override applicabile sopra un profilo di versione. ASSUNZIONI SUI KEYBIND (da impostare IN GIOCO, Menu → Tasti): le voci del radial e gli override usano i tasti funzione F1-F8, che di norma non collidono con movimento (WASD) o action bar (1-9 con Shift/Ctrl). Leghi in gioco: F1=Cavalcatura, F2=Pietra del ritorno, F3=Cibo, F4=Bende, F5=Grido di battaglia, F6=Carica, F7=abilità extra 1, F8=abilità extra 2. Tutto resta 1:1 (una voce = un tasto). Modificabile dalla GUI.",
+  "abilityOverrides": [
+    {
+      "button": "DPadUp",
+      "layer": "Shoulder_LBRB",
+      "bind": { "key": "F7", "shift": false, "ctrl": false, "alt": false }
+    },
+    {
+      "button": "DPadDown",
+      "layer": "Shoulder_LBRB",
+      "bind": { "key": "F8", "shift": false, "ctrl": false, "alt": false }
+    }
+  ],
+  "radialMenu": {
+    "enabled": true,
+    "trigger": "LeftThumb",
+    "selectDeadzone": 0.4,
+    "items": [
+      { "label": "Cavalcatura", "bind": { "key": "F1", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Ritorno", "bind": { "key": "F2", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Cibo", "bind": { "key": "F3", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Bende", "bind": { "key": "F4", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Grido di battaglia", "bind": { "key": "F5", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Carica", "bind": { "key": "F6", "shift": false, "ctrl": false, "alt": false } }
+    ]
+  }
+}

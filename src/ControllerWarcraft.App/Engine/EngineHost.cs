@@ -27,6 +27,9 @@ public sealed class EngineHost
     /// <summary>Callback di stato (console) propagata a ogni engine ricostruito.</summary>
     public Action<string>? OnStatus { get; set; }
 
+    /// <summary>Callback di cambio stato del radial menu, propagata a ogni engine ricostruito.</summary>
+    public Action? OnRadialChanged { get; set; }
+
     public EngineHost(ProfileManager manager, ControllerProfile profile, string stem)
     {
         _manager = manager;
@@ -39,6 +42,12 @@ public sealed class EngineHost
     public ControllerMode Mode => Engine.Mode;
     public AbilityLayer Layer => Engine.Layer;
     public string ProfileName => Profile.Name;
+
+    // ---- Radial menu (Fase 4): pass-through verso l'engine corrente ----
+    public bool RadialUsable => Engine.RadialUsable;
+    public bool RadialOpen => Engine.RadialOpen;
+    public int RadialIndex => Engine.RadialIndex;
+    public IReadOnlyList<string> RadialLabels => Engine.RadialLabels;
 
     public GamepadSnapshot Poll() => _poller.Poll();
     public void Update(in GamepadSnapshot s) => Engine.Update(s);
@@ -76,5 +85,6 @@ public sealed class EngineHost
     private MappingEngine BuildEngine(ControllerProfile p) => new(p, _emulator)
     {
         OnStatus = OnStatus,
+        OnRadialChanged = OnRadialChanged,
     };
 }

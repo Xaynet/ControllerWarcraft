@@ -52,6 +52,11 @@ public partial class OverlayWindow : Window
 
         ProfileText.Text = string.IsNullOrWhiteSpace(s.ProfileName) ? "" : $"Profilo: {s.ProfileName}";
 
+        // Contesto opzionale dal companion addon (Fase 4): mostrato solo se presente.
+        CompanionText.Text = s.CompanionText ?? "";
+        CompanionText.Visibility = string.IsNullOrWhiteSpace(s.CompanionText)
+            ? Visibility.Collapsed : Visibility.Visible;
+
         var color = s.Paused ? PausedColor
                   : s.Mode == OverlayMode.Cursor ? CursorColor
                   : MovementColor;

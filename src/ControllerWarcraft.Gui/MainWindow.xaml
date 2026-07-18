@@ -5,8 +5,8 @@
         xmlns:prof="clr-namespace:ControllerWarcraft.Core.Profiles;assembly=ControllerWarcraft.Core"
         xmlns:keys="clr-namespace:ControllerWarcraft.Core.Input;assembly=ControllerWarcraft.Core"
         xmlns:vm="clr-namespace:ControllerWarcraft.Gui.ViewModels"
-        Title="ControllerWarcraft — Editor Profili (Fase 3)"
-        Height="800" Width="1080" MinHeight="560" MinWidth="860">
+        Title="ControllerWarcraft — Editor Profili (Fase 4)"
+        Height="820" Width="1080" MinHeight="560" MinWidth="860">
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -32,6 +32,11 @@
         <ObjectDataProvider x:Key="CurveValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="prof:CurveType" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="RadialTriggerValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:RadialTrigger" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
@@ -105,6 +110,19 @@
                             <TextBlock Text="Descrizione" Style="{StaticResource Label}" />
                             <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                                      TextWrapping="Wrap" AcceptsReturn="True" MinHeight="54" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Preset di classe (Fase 4) — override sul profilo">
+                        <StackPanel>
+                            <TextBlock Text="Applica un preset di classe (abilità + radial) sopra il profilo corrente. Rivedi e poi Salva."
+                                       Foreground="#777" TextWrapping="Wrap" Margin="0,0,0,6" FontSize="11" />
+                            <ComboBox ItemsSource="{Binding ClassPresets}"
+                                      SelectedItem="{Binding SelectedClassPreset}"
+                                      DisplayMemberPath="Name" />
+                            <Button Content="Applica preset di classe" Margin="0,8,0,0"
+                                    HorizontalAlignment="Left" MinWidth="180"
+                                    Command="{Binding ApplyClassPresetCommand}" />
                         </StackPanel>
                     </GroupBox>
 
@@ -224,29 +242,80 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <DockPanel Grid.Column="1">
-                <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="#555"
-                           Text="Tabella abilità: (pulsante × layer) → keybind di gioco. Modifica tasto e modificatori; salva per scrivere il profilo nella cartella utente." />
-                <DataGrid ItemsSource="{Binding Abilities}"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="True" CanUserDeleteRows="True"
-                          HeadersVisibility="Column" GridLinesVisibility="Horizontal">
-                    <DataGrid.Columns>
-                        <DataGridComboBoxColumn Header="Pulsante" Width="130"
-                            ItemsSource="{Binding Source={StaticResource ButtonValues}}"
-                            SelectedItemBinding="{Binding Button}" />
-                        <DataGridComboBoxColumn Header="Layer" Width="130"
-                            ItemsSource="{Binding Source={StaticResource LayerValues}}"
-                            SelectedItemBinding="{Binding Layer}" />
-                        <DataGridComboBoxColumn Header="Tasto" Width="120"
-                            ItemsSource="{Binding Source={StaticResource KeyValues}}"
-                            SelectedItemBinding="{Binding Key}" />
-                        <DataGridCheckBoxColumn Header="Shift" Width="60" Binding="{Binding Shift}" />
-                        <DataGridCheckBoxColumn Header="Ctrl" Width="60" Binding="{Binding Ctrl}" />
-                        <DataGridCheckBoxColumn Header="Alt" Width="60" Binding="{Binding Alt}" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0">
+                    <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="#555"
+                               Text="Tabella abilità: (pulsante × layer) → keybind di gioco. Modifica tasto e modificatori; salva per scrivere il profilo nella cartella utente." />
+                    <DataGrid ItemsSource="{Binding Abilities}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="True" CanUserDeleteRows="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridComboBoxColumn Header="Pulsante" Width="130"
+                                ItemsSource="{Binding Source={StaticResource ButtonValues}}"
+                                SelectedItemBinding="{Binding Button}" />
+                            <DataGridComboBoxColumn Header="Layer" Width="130"
+                                ItemsSource="{Binding Source={StaticResource LayerValues}}"
+                                SelectedItemBinding="{Binding Layer}" />
+                            <DataGridComboBoxColumn Header="Tasto" Width="120"
+                                ItemsSource="{Binding Source={StaticResource KeyValues}}"
+                                SelectedItemBinding="{Binding Key}" />
+                            <DataGridCheckBoxColumn Header="Shift" Width="60" Binding="{Binding Shift}" />
+                            <DataGridCheckBoxColumn Header="Ctrl" Width="60" Binding="{Binding Ctrl}" />
+                            <DataGridCheckBoxColumn Header="Alt" Width="60" Binding="{Binding Alt}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+                <!-- Radial menu (Fase 4): tieni premuto il trigger, muovi lo stick, rilascia per
+                     inviare UN SOLO keybind della voce (1:1). -->
+                <GroupBox Grid.Row="1" Header="Radial menu (Fase 4)" Margin="0,10,0,0">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" Content="Attivo" VerticalAlignment="Center"
+                                      IsChecked="{Binding RadialEnabled}" Margin="0,0,12,0" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Trigger:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <ComboBox Width="100"
+                                          ItemsSource="{Binding Source={StaticResource RadialTriggerValues}}"
+                                          SelectedItem="{Binding RadialTrigger}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="2" Text="Soglia selez.:" VerticalAlignment="Center" Margin="12,0,6,0" />
+                            <TextBox Grid.Column="3" Width="60" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                     Text="{Binding RadialSelectDeadzone, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                        <TextBlock Text="Ogni voce invia UN SOLO keybind alla selezione (nessuna sequenza/automazione). Voci in senso orario dall'alto."
+                                   Foreground="#777" TextWrapping="Wrap" Margin="0,6,0,4" FontSize="11" />
+                        <DataGrid ItemsSource="{Binding RadialItems}" AutoGenerateColumns="False"
+                                  CanUserAddRows="True" CanUserDeleteRows="True" MaxHeight="150"
+                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Etichetta" Width="*" Binding="{Binding Label}" />
+                                <DataGridComboBoxColumn Header="Tasto" Width="120"
+                                    ItemsSource="{Binding Source={StaticResource KeyValues}}"
+                                    SelectedItemBinding="{Binding Key}" />
+                                <DataGridCheckBoxColumn Header="Shift" Width="55" Binding="{Binding Shift}" />
+                                <DataGridCheckBoxColumn Header="Ctrl" Width="55" Binding="{Binding Ctrl}" />
+                                <DataGridCheckBoxColumn Header="Alt" Width="55" Binding="{Binding Alt}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Button Content="Aggiungi voce radial" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                MinWidth="160" Command="{Binding AddRadialItemCommand}" />
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
         </Grid>
     </DockPanel>
 </Window>

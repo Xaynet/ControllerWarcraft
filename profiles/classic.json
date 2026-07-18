@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "name": "Classic",
   "gameVersion": "Classic",
   "description": "Preset Classic WoW. Stesso schema action bar di Ascension (1-9 / Shift+1..9 / Ctrl+1..9). Assunzione: nessun soft-target in Classic → il Tab-target (L3) e' la selezione primaria. Sensibilita' camera come da default vanilla.",
@@ -406,5 +406,11 @@
         "alt": false
       }
     }
-  ]
+  ],
+  "radialMenu": {
+    "enabled": false,
+    "trigger": "None",
+    "selectDeadzone": 0.4,
+    "items": []
+  }
 }

@@ -1,0 +1,19 @@
+## Interface: 11507
+## Title: ControllerWarcraft Companion
+## Notes: Espone (sola lettura) lo stato di gioco per ControllerWarcraft. NON invia input. Del tutto opzionale.
+## Author: ControllerWarcraft
+## Version: 1.0
+## SavedVariables: ControllerWarcraftCompanionDB
+## X-Website: https://github.com/ (ControllerWarcraft)
+
+# NOTA IMPORTANTE SUL NUMERO DI INTERFACCIA
+# ------------------------------------------
+# "## Interface" deve combaciare con la versione di WoW, altrimenti l'addon appare
+# "Out of date" (di norma caricabile abilitando "Load out of date AddOns"):
+#   Classic Era 1.15.x .... 11507
+#   Wrath Classic  3.4.x .... 30403
+#   Cataclysm Cl.  4.4.x .... 40400
+#   Retail (esempio) ....... 110002
+# Ascension: client custom — verificarne le regole (vedi README) e adattare il numero.
+
+ControllerWarcraftCompanion.lua

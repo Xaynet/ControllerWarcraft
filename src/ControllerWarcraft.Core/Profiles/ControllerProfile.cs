@@ -17,8 +17,9 @@ public sealed class ControllerProfile
 {
     /// <summary>Versione dello schema del file (SemVer-ish). Serve alla migrazione futura.
     /// v1.1 (Fase 3): aggiunta <see cref="MouselookSettings.Curve"/> e il layer <c>Shoulder_LBRB</c>.
-    /// I file v1.0 restano leggibili: i campi nuovi hanno default retro-compatibili.</summary>
-    public string SchemaVersion { get; set; } = "1.1";
+    /// v1.2 (Fase 4): aggiunto <see cref="RadialMenu"/> (radial menu overlay).
+    /// I file v1.0/v1.1 restano leggibili: i campi nuovi hanno default retro-compatibili.</summary>
+    public string SchemaVersion { get; set; } = "1.2";
 
     /// <summary>Nome leggibile del profilo (mostrato nella GUI e nella selezione).</summary>
     public string Name { get; set; } = "";
@@ -43,6 +44,13 @@ public sealed class ControllerProfile
 
     /// <summary>Tabella delle abilita': ogni voce lega (pulsante fisico × layer) a un keybind di gioco.</summary>
     public List<AbilityBinding> Abilities { get; set; } = new();
+
+    /// <summary>
+    /// Radial menu overlay (Fase 4, punto 1): tieni premuto un trigger, muovi lo stick destro verso
+    /// un settore, rilascia per inviare il keybind (uno solo, 1:1) di quella voce. Disattivo per
+    /// default: un profilo senza questo campo si comporta esattamente come nelle fasi precedenti.
+    /// </summary>
+    public RadialMenuSettings RadialMenu { get; set; } = new();
 
     // Indice di lookup costruito a partire dalla lista (non serializzato). Popolato pigramente.
     [JsonIgnore]

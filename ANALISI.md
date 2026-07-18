@@ -96,10 +96,13 @@ differenze (quali keybind esistono, targeting, soft-target) si gestiscono **solo
 nei profili**. Path "external-only" funziona **sempre**, anche dove gli addon sono
 bloccati o l'API differisce (Ascension, Classic Era).
 
-### Companion addon opzionale (fase futura)
-Dove l'addon è supportato, un piccolo companion può esporre lo stato di gioco
-(target, cooldown) per targeting/context migliori. **Deve restare opzionale**: mai
-un requisito.
+### Companion addon opzionale (Fase 4 — fatto)
+Dove l'addon è supportato, un piccolo companion espone in **sola lettura** lo stato di gioco
+(target, vita/risorsa, combattimento) per dare *contesto* migliore. **Resta strettamente opzionale**:
+mai un requisito. Canale = **SavedVariables** (l'unico conforme alla sandbox Lua): l'addon scrive lo
+stato, l'App lo legge se abilitato. Limite noto: i SavedVariables sono scritti dal client a
+logout/reload, quindi sono uno **snapshot**, non un feed live — motivo in più per non usarli mai per
+guidare l'input. Vedi [`addon/ControllerWarcraftCompanion`](addon/ControllerWarcraftCompanion/README.md).
 
 ## 6. Stack tecnologico consigliato
 
@@ -161,7 +164,15 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   finestra in primo piano (mappa processo→profilo in `settings.json`, con pausa opzionale fuori
   gioco) ed editing dei binding di sistema e delle curve nella GUI. Schema profilo a `v1.1`,
   retro-compatibile con i file `v1.0`.
-- **Fase 4 — Polish:** radial menu overlay, companion addon opzionale, preset per classe.
+- **Fase 4 — Polish:** ✅ *Fatto.* Radial menu overlay (tieni premuto L3/R3 → menu radiale WPF
+  click-through; muovi lo stick destro verso un settore, rilascia per inviare **un solo** keybind —
+  rigorosamente 1:1, nessuna sequenza; voci configurabili nello schema profilo e dalla GUI). Preset
+  per **classe** come override applicabili sopra il preset di versione (schema `ClassPreset` nel Core,
+  merge `ApplyTo`, esempi Warrior/Mage/Hunter in [`profiles/classes/`](profiles/README.md),
+  selezionabili e applicabili dalla GUI). **Companion addon opzionale** (WoW/Lua) che espone in sola
+  lettura lo stato di gioco via SavedVariables → [`addon/ControllerWarcraftCompanion`](addon/ControllerWarcraftCompanion/README.md);
+  l'App lo legge solo se abilitato e lo usa **solo come contesto** (mai per guidare input). Schema
+  profilo a `v1.2`, retro-compatibile con i file `v1.0`/`v1.1`.
 
 ## 10. Rilascio & CI/CD
 
@@ -176,6 +187,10 @@ Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** Sem
 
 Dettagli e procedura in **[RELEASING.md](RELEASING.md)**. La Fase 1
 (`ControllerWarcraft.App`) è ora integrata, quindi la pipeline è pienamente operativa.
+
+**Fase 4:** lo zip include ora anche i preset di classe (`profiles/classes/`) e la cartella
+`addon/` col companion **opzionale** (piccolo e self-contained; va copiato a mano in
+`Interface/AddOns/`, non è richiesto per usare l'app).
 
 ## 11. Decisioni aperte
 
@@ -213,8 +228,29 @@ Prese (Fase 3):
 - **Editing GUI:** binding di sistema (Salto/Tab-target/Annulla) e curve ora modificabili;
   aggiunto pannello impostazioni globali (overlay + auto-switch) che scrive `settings.json`.
 
+Prese (Fase 4):
+- **Radial menu:** costruito sul progetto `Overlay` (nuova `RadialMenuWindow` + `RadialMenuController`
+  su thread STA come l'overlay di modalità). Trigger = L3 o R3 (`RadialTrigger`, default `None` =
+  disattivo/retro-compat); mentre è tenuto premuto lo stick destro seleziona il settore e il rilascio
+  invia **un solo** keybind. La geometria di selezione è pura e testabile nel Core
+  (`RadialMenuResolver`, convenzione: voce 0 in alto, orario). Vincolo 1:1 garantito a livello di
+  engine: un rilascio ⇒ al più un `TapKeybind`, esattamente come un'abilità; nessuna sequenza/timer.
+- **Preset per classe:** tipo `ClassPreset` nel Core (override di `abilities` + eventuale `radialMenu`)
+  con merge `ApplyTo` applicato **a tempo di editing** (GUI): il risultato è un normale profilo utente,
+  quindi a runtime non esiste logica speciale. Esempi versionati in `profiles/classes/`. Per il modello
+  external-only sono soprattutto *convenzioni documentate* (quale slot = quale abilità) + radial tarato
+  sulla classe: le assunzioni sui keybind sono nella `description` di ciascun preset.
+- **Companion addon:** **sì**, ma strettamente opzionale e in sola lettura. Canale = SavedVariables;
+  lettore tollerante nel Core (`CompanionStateReader`), attivazione via `settings.json`
+  (`companionEnabled` default false). Lo stato è **solo visualizzato** (overlay/console), mai usato
+  per l'input. Versioni previste/testabili: Classic e Retail; Ascension da verificare (client custom).
+- **Tasti funzione:** aggiunti `F1`-`F12` a `ScanCode` (naturali per le utility del radial), solo nomi
+  nuovi ⇒ retro-compatibile.
+- **Packaging:** la release include ora `profiles/classes/` e la cartella `addon/` nello zip (vedi §10).
+
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.
-- Companion addon: sì/no e per quali versioni.
 - Editing dei tasti di movimento (WASD) dalla GUI: per ora modificabili nel JSON.
-- Radial menu nell'overlay e preset per classe (Fase 4).
+- Editing grafico (drag) della disposizione dei settori del radial: per ora l'ordine è quello della
+  lista di voci.
+- Companion su Ascension: da verificare le regole del server privato prima di distribuirlo lì.

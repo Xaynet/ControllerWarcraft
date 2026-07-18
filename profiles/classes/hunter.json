@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Hunter",
+  "className": "Hunter",
+  "gameVersion": "",
+  "description": "Preset di classe Hunter (ranged + pet) — override applicabile sopra un profilo di versione. ASSUNZIONI SUI KEYBIND (da impostare IN GIOCO, Menu → Tasti): F1=Cavalcatura, F2=Pietra del ritorno, F3=Cibo, F4=Richiama animale, F5=Cura animale, F6=Trappola, F7=abilità extra 1, F8=abilità extra 2. I tasti funzione evitano conflitti con movimento (WASD) e action bar (1-9). Ogni voce = un solo tasto (1:1). Modificabile dalla GUI.",
+  "abilityOverrides": [
+    {
+      "button": "DPadUp",
+      "layer": "Shoulder_LBRB",
+      "bind": { "key": "F7", "shift": false, "ctrl": false, "alt": false }
+    },
+    {
+      "button": "DPadDown",
+      "layer": "Shoulder_LBRB",
+      "bind": { "key": "F8", "shift": false, "ctrl": false, "alt": false }
+    }
+  ],
+  "radialMenu": {
+    "enabled": true,
+    "trigger": "LeftThumb",
+    "selectDeadzone": 0.4,
+    "items": [
+      { "label": "Cavalcatura", "bind": { "key": "F1", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Ritorno", "bind": { "key": "F2", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Cibo", "bind": { "key": "F3", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Richiama animale", "bind": { "key": "F4", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Cura animale", "bind": { "key": "F5", "shift": false, "ctrl": false, "alt": false } },
+      { "label": "Trappola", "bind": { "key": "F6", "shift": false, "ctrl": false, "alt": false } }
+    ]
+  }
+}
