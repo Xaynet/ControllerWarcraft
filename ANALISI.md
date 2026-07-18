@@ -152,7 +152,21 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
 - **Fase 3 — UX:** layer multipli, curve sensibilità, overlay indicatore modalità, auto-switch profilo.
 - **Fase 4 — Polish:** radial menu overlay, companion addon opzionale, preset per classe.
 
-## 10. Decisioni
+## 10. Rilascio & CI/CD
+
+Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:
+
+- **`.github/workflows/release.yml`** — al push di un tag `v*.*.*` compila e
+  pubblica `src/ControllerWarcraft.App` (self-contained `win-x64`, single-file)
+  su `windows-latest`, deriva la versione dal tag, comprime in uno zip versionato
+  e crea una GitHub Release con release notes automatiche.
+- **`.github/workflows/ci.yml`** — build in Release su push/PR verso `main`
+  (tag esclusi) per garantire che tutto compili.
+
+Dettagli e procedura in **[RELEASING.md](RELEASING.md)**. La Fase 1
+(`ControllerWarcraft.App`) è ora integrata, quindi la pipeline è pienamente operativa.
+
+## 11. Decisioni aperte
 
 Prese (Fasi 0-1):
 - **Linguaggio/stack:** C# / .NET (target `net10.0-windows`, l'SDK installato).
