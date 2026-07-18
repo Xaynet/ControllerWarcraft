@@ -83,26 +83,32 @@ public sealed class MovementSettings
 }
 
 /// <summary>Impostazioni del mouselook (stick destro in modalita' Movimento/Combattimento).</summary>
-public sealed class MouselookSettings
+public sealed class MouselookSettings : ObservableModel
 {
+    private double _sensitivityX = 18.0;
+    private double _sensitivityY = 14.0;
+    private bool _invertY = false;
+    private double _deadzone = 0.2652;
+    private ResponseCurve _curve = new();
+
     /// <summary>Pixel di movimento mouse orizzontale per tick a stick pieno.</summary>
-    public double SensitivityX { get; set; } = 18.0;
+    public double SensitivityX { get => _sensitivityX; set => SetField(ref _sensitivityX, value); }
 
     /// <summary>Pixel di movimento mouse verticale per tick a stick pieno.</summary>
-    public double SensitivityY { get; set; } = 14.0;
+    public double SensitivityY { get => _sensitivityY; set => SetField(ref _sensitivityY, value); }
 
     /// <summary>Inverte l'asse verticale della camera.</summary>
-    public bool InvertY { get; set; } = false;
+    public bool InvertY { get => _invertY; set => SetField(ref _invertY, value); }
 
     /// <summary>Deadzone radiale dello stick destro, normalizzata (0..1). Default XInput ≈ 0.265.</summary>
-    public double Deadzone { get; set; } = 0.2652;
+    public double Deadzone { get => _deadzone; set => SetField(ref _deadzone, value); }
 
     /// <summary>
     /// Curva di risposta (Fase 3) applicata all'ampiezza dello stick destro prima della sensibilità.
     /// Default <see cref="CurveType.Linear"/> = comportamento storico; un profilo senza questo campo
     /// si comporta esattamente come prima.
     /// </summary>
-    public ResponseCurve Curve { get; set; } = new();
+    public ResponseCurve Curve { get => _curve; set => SetField(ref _curve, value ?? new ResponseCurve()); }
 }
 
 /// <summary>Impostazioni della modalita' cursore (stick destro → cursore virtuale).</summary>

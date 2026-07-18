@@ -28,10 +28,13 @@ public enum CurveType
 /// comportamento lineare precedente, quindi un profilo JSON senza il campo <c>curve</c> è identico
 /// a prima.
 /// </summary>
-public sealed class ResponseCurve
+public sealed class ResponseCurve : ObservableModel
 {
+    private CurveType _type = CurveType.Linear;
+    private double _exponent = 1.5;
+
     /// <summary>Tipo di curva. Default <see cref="CurveType.Linear"/> (nessuna alterazione).</summary>
-    public CurveType Type { get; set; } = CurveType.Linear;
+    public CurveType Type { get => _type; set => SetField(ref _type, value); }
 
     /// <summary>
     /// Parametro di intensità della curva:
@@ -39,7 +42,7 @@ public sealed class ResponseCurve
     /// per <see cref="CurveType.Exponential"/> è la "durezza" k (più alto = accelerazione più marcata).
     /// Ignorato da <see cref="CurveType.Linear"/>.
     /// </summary>
-    public double Exponent { get; set; } = 1.5;
+    public double Exponent { get => _exponent; set => SetField(ref _exponent, value); }
 
     /// <summary>
     /// Rimappa l'ampiezza <paramref name="magnitude"/> (0..1) secondo la curva, restituendo un
