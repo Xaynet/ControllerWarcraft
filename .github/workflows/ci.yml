@@ -1,0 +1,50 @@
+name: CI
+
+# Build di verifica su ogni push e pull request verso main.
+# I tag sono esclusi: il rilascio e' gestito da release.yml per non duplicare.
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Build (Release) di tutti i progetti
+        shell: pwsh
+        run: |
+          # Nessuna solution nel repo: compila ogni .csproj trovato.
+          $projects = Get-ChildItem -Path . -Recurse -Filter *.csproj
+          if (-not $projects) {
+            Write-Error "Nessun progetto .csproj trovato."
+            exit 1
+          }
+          foreach ($proj in $projects) {
+            Write-Host "==> dotnet build $($proj.FullName)"
+            dotnet build $proj.FullName -c Release
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Build fallita per $($proj.FullName)"
+              exit $LASTEXITCODE
+            }
+          }

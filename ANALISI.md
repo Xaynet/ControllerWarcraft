@@ -147,7 +147,22 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
 - **Fase 3 — UX:** layer multipli, curve sensibilità, overlay indicatore modalità, auto-switch profilo.
 - **Fase 4 — Polish:** radial menu overlay, companion addon opzionale, preset per classe.
 
-## 10. Decisioni aperte
+## 10. Rilascio & CI/CD
+
+Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:
+
+- **`.github/workflows/release.yml`** — al push di un tag `v*.*.*` compila e
+  pubblica `src/ControllerWarcraft.App` (self-contained `win-x64`, single-file)
+  su `windows-latest`, deriva la versione dal tag, comprime in uno zip versionato
+  e crea una GitHub Release con release notes automatiche.
+- **`.github/workflows/ci.yml`** — build in Release su push/PR verso `main`
+  (tag esclusi) per garantire che tutto compili.
+
+Dettagli e procedura in **[RELEASING.md](RELEASING.md)**. Nota: il workflow di
+release dipende dal merge della Fase 1 (il progetto `ControllerWarcraft.App`);
+finché non è presente, il job di publish va puntato allo Spike.
+
+## 11. Decisioni aperte
 
 - Linguaggio/stack definitivo (C#/.NET consigliato).
 - Output: SendInput (semplice) vs Interception driver (robusto).
