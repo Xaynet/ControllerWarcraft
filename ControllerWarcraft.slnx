@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ControllerWarcraft.App/ControllerWarcraft.App.csproj" />
+    <Project Path="src/ControllerWarcraft.Spike/ControllerWarcraft.Spike.csproj" />
+  </Folder>
+</Solution>

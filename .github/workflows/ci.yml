@@ -31,20 +31,8 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Build (Release) di tutti i progetti
-        shell: pwsh
-        run: |
-          # Nessuna solution nel repo: compila ogni .csproj trovato.
-          $projects = Get-ChildItem -Path . -Recurse -Filter *.csproj
-          if (-not $projects) {
-            Write-Error "Nessun progetto .csproj trovato."
-            exit 1
-          }
-          foreach ($proj in $projects) {
-            Write-Host "==> dotnet build $($proj.FullName)"
-            dotnet build $proj.FullName -c Release
-            if ($LASTEXITCODE -ne 0) {
-              Write-Error "Build fallita per $($proj.FullName)"
-              exit $LASTEXITCODE
-            }
-          }
+      - name: Restore
+        run: dotnet restore ControllerWarcraft.slnx
+
+      - name: Build (Release) della solution
+        run: dotnet build ControllerWarcraft.slnx -c Release --no-restore
