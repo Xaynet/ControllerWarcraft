@@ -10,8 +10,26 @@ namespace ControllerWarcraft.App.Input;
 public sealed class GamepadPoller
 {
     private readonly uint _userIndex;
+    private readonly short _leftDeadzone;
+    private readonly short _rightDeadzone;
 
-    public GamepadPoller(uint userIndex = 0) => _userIndex = userIndex;
+    /// <param name="userIndex">Slot XInput (0-3).</param>
+    /// <param name="leftDeadzone">Deadzone stick sinistro normalizzata (0..1). Se null usa il default XInput.</param>
+    /// <param name="rightDeadzone">Deadzone stick destro normalizzata (0..1). Se null usa il default XInput.</param>
+    public GamepadPoller(uint userIndex = 0, double? leftDeadzone = null, double? rightDeadzone = null)
+    {
+        _userIndex = userIndex;
+        _leftDeadzone = ToRaw(leftDeadzone, NativeMethods.LeftThumbDeadzone);
+        _rightDeadzone = ToRaw(rightDeadzone, NativeMethods.RightThumbDeadzone);
+    }
+
+    // Converte una deadzone normalizzata (0..1) nelle unita' grezze XInput (0..32767).
+    private static short ToRaw(double? normalized, short fallback)
+    {
+        if (normalized is not { } n) return fallback;
+        n = Math.Clamp(n, 0.0, 0.95);
+        return (short)Math.Round(n * 32767);
+    }
 
     public GamepadSnapshot Poll()
     {
@@ -25,10 +43,10 @@ public sealed class GamepadPoller
         {
             Connected = true,
 
-            LeftX = Normalize(pad.sThumbLX, NativeMethods.LeftThumbDeadzone),
-            LeftY = Normalize(pad.sThumbLY, NativeMethods.LeftThumbDeadzone),
-            RightX = Normalize(pad.sThumbRX, NativeMethods.RightThumbDeadzone),
-            RightY = Normalize(pad.sThumbRY, NativeMethods.RightThumbDeadzone),
+            LeftX = Normalize(pad.sThumbLX, _leftDeadzone),
+            LeftY = Normalize(pad.sThumbLY, _leftDeadzone),
+            RightX = Normalize(pad.sThumbRX, _rightDeadzone),
+            RightY = Normalize(pad.sThumbRY, _rightDeadzone),
 
             A = b.HasFlag(NativeMethods.GamepadButton.A),
             B = b.HasFlag(NativeMethods.GamepadButton.B),

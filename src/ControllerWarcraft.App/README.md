@@ -1,13 +1,19 @@
-# ControllerWarcraft — App (Fase 1: MVP giocabile)
+# ControllerWarcraft — App (runtime)
 
-MVP dell'applicazione **esterna** che permette di giocare a WoW con un controller Xbox
-emulando tastiera + mouse. Nessun addon, mapping rigorosamente **1:1** (nessuna
-automazione — vedi [ANALISI.md §8](../../ANALISI.md)).
+Applicazione **esterna** che permette di giocare a WoW con un controller Xbox emulando
+tastiera + mouse. Nessun addon, mapping rigorosamente **1:1** (nessuna automazione — vedi
+[ANALISI.md §8](../../ANALISI.md)).
 
 Evoluzione dello [Spike Fase 0](../ControllerWarcraft.Spike/README.md), riorganizzata
-in un'architettura modulare in vista delle fasi successive.
+in un'architettura modulare.
 
-## Cosa fa (Fase 1)
+> **Fase 2:** il mapping non è più hardcoded. L'App carica un **profilo JSON** tramite il
+> `ProfileManager` condiviso ([`ControllerWarcraft.Core`](../ControllerWarcraft.Core/)); i preset
+> per Ascension/Classic/Retail sono in [`profiles/`](../../profiles/README.md) e si modificano
+> dalla [GUI](../ControllerWarcraft.Gui/README.md). Il preset Ascension replica esattamente il
+> comportamento della Fase 1; se nessun file è presente si ricade sul built-in Ascension in codice.
+
+## Cosa fa
 
 - **Movimento + camera** — stick sx → WASD, stick dx → mouselook (RMB tenuto + delta mouse).
 - **Layer di abilità** — LB/RB come *shift*: ogni pulsante frontale/D-pad/grilletto ha 3 stati
@@ -17,10 +23,24 @@ in un'architettura modulare in vista delle fasi successive.
   A = click sinistro, X = click destro, B = Escape. Per loot/vendor/talenti.
 - **Macchina a stati delle modalità** — Movimento/Combattimento ↔ Cursore, con indicatore
   a console ad ogni cambio di modalità/layer.
-- **Profilo Ascension hardcoded** — i keybind sono costanti in codice (il sistema profili
-  JSON è Fase 2).
+- **Profilo da JSON** — i keybind, le curve di sensibilità e le deadzone arrivano dal profilo
+  attivo (default: preset Ascension, identico alla Fase 1).
 
-## Mapping completo (profilo Ascension)
+## Selezione del profilo
+
+Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json` (`activeProfile`), impostabile
+dalla [GUI](../ControllerWarcraft.Gui/README.md) o a mano. Utility da riga di comando:
+
+```powershell
+cwapp --list                 # elenca i profili disponibili (preset + utente)
+cwapp --profile classic      # usa 'classic' solo per questa esecuzione
+cwapp --export-presets dir   # rigenera i preset JSON (nessun input inviato)
+cwapp --help
+```
+
+Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profiles/README.md).
+
+## Mapping completo (preset Ascension)
 
 | Input controller | Modalità Movimento/Combattimento | Modalità Cursore |
 |---|---|---|
@@ -77,17 +97,25 @@ Premi **BACK** per fermarti; l'app rilascia sempre ogni tasto all'uscita.
 Struttura modulare che rispecchia [ANALISI.md §5](../../ANALISI.md):
 
 ```
-Native/    NativeMethods       P/Invoke XInput + SendInput (evoluzione dello spike)
-Input/     GamepadPoller       XInput → GamepadSnapshot (normalizzato, deadzone)
-           GamepadSnapshot     DTO immutabile dello stato gamepad
-Output/    InputEmulator       SendInput: hold/tap tasti, mouselook, click; ReleaseAll
-Profiles/  Keybind             tasto + modificatori (Shift/Ctrl/Alt)
-           ActionButton        pulsanti mappabili + AbilityLayer (Base/+LB/+RB)
-           AscensionProfile    (pulsante × layer) → keybind, hardcoded
-Engine/    ControllerMode      enum modalità
-           MappingEngine       cuore: state machine modalità + layer, guida l'emulatore
-Program.cs                     main loop sottile: poll → engine.Update → sleep
+(Core, condiviso con la Gui)
+  Input/     ScanCode          enum scancode di tastiera (parte dello schema JSON)
+  Profiles/  Keybind           tasto + modificatori (Shift/Ctrl/Alt)
+             ActionButton      pulsanti mappabili + AbilityLayer (Base/+LB/+RB)
+             ControllerProfile schema serializzabile: movimento/mouselook/cursore/system/abilities
+             ProfileManager    carica/salva profili JSON, profilo attivo, fallback
+             AppSettings       profilo attivo persistito
+             Presets/BuiltInProfiles  Ascension (=Fase 1) / Classic / Retail in codice
+
+(App, runtime)
+  Native/    NativeMethods     P/Invoke XInput + SendInput (usa Core.ScanCode)
+  Input/     GamepadPoller     XInput → GamepadSnapshot (deadzone dal profilo)
+             GamepadSnapshot   DTO immutabile dello stato gamepad
+  Output/    InputEmulator     SendInput: hold/tap tasti, mouselook, click; ReleaseAll
+  Engine/    ControllerMode    enum modalità
+             MappingEngine     cuore: state machine + layer, legge i parametri dal profilo
+  Program.cs                   main loop + sotto-comandi (--list/--profile/--export-presets)
 ```
 
-Il **MappingEngine** e i profili sono separati dal main loop e dall'I/O: sono il punto di
-estensione per la Fase 2 (profili JSON), la Fase 3 (curve di sensibilità, overlay) e i test.
+Il **MappingEngine** legge tutti i parametri (mappature, sensibilità, deadzone, soglie) dal
+`ControllerProfile`: resta separato dal main loop e dall'I/O ed è pronto per la Fase 3 (curve di
+sensibilità non lineari, overlay) e per i test.

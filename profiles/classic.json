@@ -1,0 +1,316 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Classic",
+  "gameVersion": "Classic",
+  "description": "Preset Classic WoW. Stesso schema action bar di Ascension (1-9 / Shift+1..9 / Ctrl+1..9). Assunzione: nessun soft-target in Classic → il Tab-target (L3) e' la selezione primaria. Sensibilita' camera come da default vanilla.",
+  "movement": {
+    "forward": "W",
+    "back": "S",
+    "left": "A",
+    "right": "D",
+    "threshold": 0.5,
+    "deadzone": 0.2395
+  },
+  "mouselook": {
+    "sensitivityX": 18,
+    "sensitivityY": 14,
+    "invertY": false,
+    "deadzone": 0.2652
+  },
+  "cursor": {
+    "speed": 16,
+    "invertY": false
+  },
+  "system": {
+    "jump": {
+      "key": "Space",
+      "shift": false,
+      "ctrl": false,
+      "alt": false
+    },
+    "tabTarget": {
+      "key": "Tab",
+      "shift": false,
+      "ctrl": false,
+      "alt": false
+    },
+    "cursorCancel": {
+      "key": "Escape",
+      "shift": false,
+      "ctrl": false,
+      "alt": false
+    }
+  },
+  "abilities": [
+    {
+      "button": "X",
+      "layer": "Base",
+      "bind": {
+        "key": "D1",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "X",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D1",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "X",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D1",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "B",
+      "layer": "Base",
+      "bind": {
+        "key": "D2",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "B",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D2",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "B",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D2",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "Y",
+      "layer": "Base",
+      "bind": {
+        "key": "D3",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "Y",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D3",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "Y",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D3",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "RightTrigger",
+      "layer": "Base",
+      "bind": {
+        "key": "D4",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "RightTrigger",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D4",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "RightTrigger",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D4",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "LeftTrigger",
+      "layer": "Base",
+      "bind": {
+        "key": "D5",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "LeftTrigger",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D5",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "LeftTrigger",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D5",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadUp",
+      "layer": "Base",
+      "bind": {
+        "key": "D6",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadUp",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D6",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadUp",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D6",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadRight",
+      "layer": "Base",
+      "bind": {
+        "key": "D7",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadRight",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D7",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadRight",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D7",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadDown",
+      "layer": "Base",
+      "bind": {
+        "key": "D8",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadDown",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D8",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadDown",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D8",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadLeft",
+      "layer": "Base",
+      "bind": {
+        "key": "D9",
+        "shift": false,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadLeft",
+      "layer": "Shoulder_LB",
+      "bind": {
+        "key": "D9",
+        "shift": true,
+        "ctrl": false,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadLeft",
+      "layer": "Shoulder_RB",
+      "bind": {
+        "key": "D9",
+        "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    }
+  ]
+}

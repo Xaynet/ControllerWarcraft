@@ -50,9 +50,21 @@ permesso `contents: write` necessario a creare la release.
 
 ## Continuous Integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) compila in Release ogni
-progetto `.csproj` su push e pull request verso `main`. I tag sono esclusi dalla
-CI (`tags-ignore`) per non duplicare il lavoro con il workflow di release.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) compila in Release l'intera
+solution `ControllerWarcraft.slnx` (quindi **tutti** i progetti: Core, App, Gui,
+Spike) su push e pull request verso `main`. I tag sono esclusi dalla CI
+(`tags-ignore`) per non duplicare il lavoro con il workflow di release.
+
+> Aggiungendo nuovi progetti alla solution vengono automaticamente coperti dalla CI:
+> non serve toccare `ci.yml`. La build fallisce se un qualsiasi progetto non compila.
+
+## Cosa viene rilasciato
+
+Il workflow di release pubblica **solo** `src/ControllerWarcraft.App` (il runtime
+`cwapp`), con la cartella `profiles/` dei preset copiata accanto all'eseguibile. La
+**GUI** (`ControllerWarcraft.Gui`) è per ora coperta solo dalla CI (build di verifica);
+non viene ancora impacchettata nella release. Quando la si vorrà distribuire, aggiungere
+un secondo `dotnet publish` in `release.yml` e includerne l'output nello zip.
 
 ## Dipendenza dalla Fase 1
 

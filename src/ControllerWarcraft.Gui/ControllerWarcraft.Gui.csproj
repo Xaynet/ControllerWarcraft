@@ -1,24 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <!-- net10.0-windows: e' l'SDK/runtime installato. Cambiabile in net8.0-windows se disponibile. -->
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>cwapp</AssemblyName>
-    <RootNamespace>ControllerWarcraft.App</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>cwgui</AssemblyName>
+    <RootNamespace>ControllerWarcraft.Gui</RootNamespace>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Schema profili, ProfileManager e preset (condivisi con la Gui). -->
     <ProjectReference Include="..\ControllerWarcraft.Core\ControllerWarcraft.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- I preset JSON versionati vengono copiati accanto all'eseguibile in profiles/,
-         cosi' il ProfileManager li trova a runtime (PresetProfilesDir = <exe>/profiles). -->
+    <!-- La GUI condivide gli stessi preset dell'App: li copia accanto all'eseguibile
+         cosi' il ProfileManager (PresetProfilesDir = <exe>/profiles) li trova. -->
     <None Include="..\..\profiles\*.json" Link="profiles\%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

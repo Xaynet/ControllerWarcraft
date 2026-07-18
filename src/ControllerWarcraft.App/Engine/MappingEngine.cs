@@ -1,11 +1,8 @@
 using ControllerWarcraft.App.Input;
-using ControllerWarcraft.App.Native;
 using ControllerWarcraft.App.Output;
-using ControllerWarcraft.App.Profiles;
+using ControllerWarcraft.Core.Profiles;
 
 namespace ControllerWarcraft.App.Engine;
-
-using SC = NativeMethods.ScanCode;
 
 /// <summary>
 /// Mapping Engine (ANALISI §5): il cuore del progetto. Ad ogni tick riceve uno
@@ -19,19 +16,19 @@ using SC = NativeMethods.ScanCode;
 /// </summary>
 public sealed class MappingEngine
 {
-    private readonly AscensionProfile _profile;
+    private readonly ControllerProfile _profile;
     private readonly InputEmulator _out;
 
     // Snapshot precedente, per l'edge-detection (reagire alla pressione, non a ogni tick).
     private GamepadSnapshot _prev = GamepadSnapshot.Disconnected;
 
-    // ---- Parametri (Fase 1: costanti; Fase 3: curve configurabili) ----
-    // Mouselook: pixel di movimento mouse per tick a stick pieno.
-    private const double LookSensX = 18.0;
-    private const double LookSensY = 14.0;
-    private const bool InvertLookY = false;
-    // Cursore virtuale: pixel per tick a stick pieno.
-    private const double CursorSpeed = 16.0;
+    // ---- Parametri letti dal profilo (Fase 2: configurabili via JSON/GUI) ----
+    private double LookSensX => _profile.Mouselook.SensitivityX;
+    private double LookSensY => _profile.Mouselook.SensitivityY;
+    private bool InvertLookY => _profile.Mouselook.InvertY;
+    private double CursorSpeed => _profile.Cursor.Speed;
+    private bool InvertCursorY => _profile.Cursor.InvertY;
+    private double MoveThreshold => _profile.Movement.Threshold;
 
     public ControllerMode Mode { get; private set; } = ControllerMode.MovementCombat;
     public AbilityLayer Layer { get; private set; } = AbilityLayer.Base;
@@ -39,7 +36,7 @@ public sealed class MappingEngine
     /// <summary>Notifica testuale per l'indicatore (console/tray). Es. cambio modalita' o layer.</summary>
     public Action<string>? OnStatus { get; set; }
 
-    public MappingEngine(AscensionProfile profile, InputEmulator emulator)
+    public MappingEngine(ControllerProfile profile, InputEmulator emulator)
     {
         _profile = profile;
         _out = emulator;
@@ -67,10 +64,12 @@ public sealed class MappingEngine
     // ---------------------------------------------------------------- movimento
     private void UpdateMovement(in GamepadSnapshot s)
     {
-        _out.HoldKey(SC.W, s.LeftY > 0.5);
-        _out.HoldKey(SC.S, s.LeftY < -0.5);
-        _out.HoldKey(SC.D, s.LeftX > 0.5);
-        _out.HoldKey(SC.A, s.LeftX < -0.5);
+        var m = _profile.Movement;
+        double t = MoveThreshold;
+        _out.HoldKey(m.Forward, s.LeftY > t);
+        _out.HoldKey(m.Back, s.LeftY < -t);
+        _out.HoldKey(m.Right, s.LeftX > t);
+        _out.HoldKey(m.Left, s.LeftX < -t);
     }
 
     // -------------------------------------------------- modalita' Movimento/Combattimento
@@ -90,10 +89,10 @@ public sealed class MappingEngine
         UpdateLayer(s);
 
         // A = Salto (tap su edge).
-        if (Pressed(s.A, _prev.A)) _out.TapKeybind(_profile.Jump);
+        if (Pressed(s.A, _prev.A)) _out.TapKeybind(_profile.System.Jump);
 
         // L3 = Tab-target (tap su edge).
-        if (Pressed(s.LeftThumbClick, _prev.LeftThumbClick)) _out.TapKeybind(_profile.TabTarget);
+        if (Pressed(s.LeftThumbClick, _prev.LeftThumbClick)) _out.TapKeybind(_profile.System.TabTarget);
 
         // Abilita' dei pulsanti frontali/D-pad/grilletti, secondo il layer corrente.
         FireAbility(ActionButton.X, s.X, _prev.X);
@@ -133,7 +132,8 @@ public sealed class MappingEngine
         if (s.RightX != 0 || s.RightY != 0)
         {
             int dx = (int)Math.Round(s.RightX * CursorSpeed);
-            int dy = (int)Math.Round(s.RightY * CursorSpeed) * -1; // schermo: Y cresce verso il basso
+            // schermo: Y cresce verso il basso, quindi di norma si inverte (stick su -> cursore su).
+            int dy = (int)Math.Round(s.RightY * CursorSpeed) * (InvertCursorY ? 1 : -1);
             _out.MouseMove(dx, dy);
         }
 
@@ -144,7 +144,7 @@ public sealed class MappingEngine
         if (Pressed(s.X, _prev.X)) _out.RightClick();
 
         // B = Escape (chiude finestre) su edge.
-        if (Pressed(s.B, _prev.B)) _out.TapKeybind(_profile.CursorCancel);
+        if (Pressed(s.B, _prev.B)) _out.TapKeybind(_profile.System.CursorCancel);
     }
 
     // ---------------------------------------------------------------- macchina a stati

@@ -1,0 +1,213 @@
+<Window x:Class="ControllerWarcraft.Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:prof="clr-namespace:ControllerWarcraft.Core.Profiles;assembly=ControllerWarcraft.Core"
+        xmlns:keys="clr-namespace:ControllerWarcraft.Core.Input;assembly=ControllerWarcraft.Core"
+        xmlns:vm="clr-namespace:ControllerWarcraft.Gui.ViewModels"
+        Title="ControllerWarcraft — Editor Profili (Fase 2)"
+        Height="720" Width="1040" MinHeight="520" MinWidth="820">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <!-- Sorgenti enum per le ComboBox della griglia. -->
+        <ObjectDataProvider x:Key="ButtonValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:ActionButton" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="LayerValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:AbilityLayer" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="KeyValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="keys:ScanCode" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <Style TargetType="TextBlock" x:Key="Label">
+            <Setter Property="Margin" Value="0,6,8,2" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel Margin="12">
+
+        <!-- Barra superiore: selezione profilo + azioni -->
+        <Border DockPanel.Dock="Top" Padding="10" Margin="0,0,0,10"
+                Background="#F2F3F5" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Profilo:" VerticalAlignment="Center"
+                           FontWeight="Bold" Margin="0,0,8,0" />
+                <ComboBox Grid.Column="1" VerticalAlignment="Center"
+                          ItemsSource="{Binding Profiles}"
+                          SelectedItem="{Binding SelectedProfile}"
+                          DisplayMemberPath="Name" />
+
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="14,0,0,0"
+                           Foreground="#555"
+                           Text="{Binding ActiveProfileStem, StringFormat=Attivo (settings.json): {0}}" />
+
+                <Button Grid.Column="3" Content="Ricarica" MinWidth="90" Margin="4,0"
+                        Command="{Binding ReloadCommand}" />
+                <Button Grid.Column="4" Content="Salva" MinWidth="90" Margin="4,0"
+                        Command="{Binding SaveCommand}" />
+                <Button Grid.Column="5" Content="Imposta come attivo" MinWidth="140" Margin="4,0"
+                        Command="{Binding SetActiveCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- Barra di stato -->
+        <Border DockPanel.Dock="Bottom" Padding="8,6" Margin="0,10,0,0"
+                Background="#22303030" CornerRadius="4">
+            <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+        </Border>
+
+        <!-- Corpo: impostazioni a sinistra, tabella abilita' a destra -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,12,0">
+                <StackPanel>
+
+                    <GroupBox Header="Profilo">
+                        <StackPanel>
+                            <TextBlock Text="Nome" Style="{StaticResource Label}" />
+                            <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Versione gioco" Style="{StaticResource Label}" />
+                            <TextBox Text="{Binding GameVersion, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Descrizione" Style="{StaticResource Label}" />
+                            <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                                     TextWrapping="Wrap" AcceptsReturn="True" MinHeight="54" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Mouselook (camera)">
+                        <StackPanel>
+                            <TextBlock Text="Sensibilità X" Style="{StaticResource Label}" />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding Mouselook.SensitivityX, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True"
+                                        Value="{Binding Mouselook.SensitivityX}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <TextBlock Text="Sensibilità Y" Style="{StaticResource Label}" />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding Mouselook.SensitivityY, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True"
+                                        Value="{Binding Mouselook.SensitivityY}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <CheckBox Content="Inverti asse Y" Margin="0,8,0,0"
+                                      IsChecked="{Binding Mouselook.InvertY}" />
+                            <TextBlock Text="Deadzone stick destro (0..1)" Style="{StaticResource Label}" />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding Mouselook.Deadzone, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="0" Maximum="0.9" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                                        Value="{Binding Mouselook.Deadzone}" VerticalAlignment="Center" />
+                            </DockPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Cursore">
+                        <StackPanel>
+                            <TextBlock Text="Velocità cursore" Style="{StaticResource Label}" />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding Cursor.Speed, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="1" Maximum="60" TickFrequency="1" IsSnapToTickEnabled="True"
+                                        Value="{Binding Cursor.Speed}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <CheckBox Content="Inverti asse Y" Margin="0,8,0,0"
+                                      IsChecked="{Binding Cursor.InvertY}" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Movimento">
+                        <StackPanel>
+                            <TextBlock Text="Soglia stick (0..1)" Style="{StaticResource Label}" />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding Movement.Threshold, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="0.1" Maximum="0.9" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                                        Value="{Binding Movement.Threshold}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <TextBlock Text="Deadzone stick sinistro (0..1)" Style="{StaticResource Label}" />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding Movement.Deadzone, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="0" Maximum="0.9" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                                        Value="{Binding Movement.Deadzone}" VerticalAlignment="Center" />
+                            </DockPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Binding di sistema">
+                        <StackPanel>
+                            <TextBlock Text="Salto" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource KeyValues}}"
+                                      SelectedItem="{Binding System.Jump.Key, Mode=OneWay}"
+                                      IsEnabled="False"
+                                      ToolTip="I binding di sistema si modificano dal JSON in questa fase." />
+                            <TextBlock Text="Tab-target" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource KeyValues}}"
+                                      SelectedItem="{Binding System.TabTarget.Key, Mode=OneWay}"
+                                      IsEnabled="False" />
+                            <TextBlock Text="Annulla (cursore)" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource KeyValues}}"
+                                      SelectedItem="{Binding System.CursorCancel.Key, Mode=OneWay}"
+                                      IsEnabled="False" />
+                        </StackPanel>
+                    </GroupBox>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <DockPanel Grid.Column="1">
+                <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="#555"
+                           Text="Tabella abilità: (pulsante × layer) → keybind di gioco. Modifica tasto e modificatori; salva per scrivere il profilo nella cartella utente." />
+                <DataGrid ItemsSource="{Binding Abilities}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="True" CanUserDeleteRows="True"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                    <DataGrid.Columns>
+                        <DataGridComboBoxColumn Header="Pulsante" Width="130"
+                            ItemsSource="{Binding Source={StaticResource ButtonValues}}"
+                            SelectedItemBinding="{Binding Button}" />
+                        <DataGridComboBoxColumn Header="Layer" Width="130"
+                            ItemsSource="{Binding Source={StaticResource LayerValues}}"
+                            SelectedItemBinding="{Binding Layer}" />
+                        <DataGridComboBoxColumn Header="Tasto" Width="120"
+                            ItemsSource="{Binding Source={StaticResource KeyValues}}"
+                            SelectedItemBinding="{Binding Key}" />
+                        <DataGridCheckBoxColumn Header="Shift" Width="60" Binding="{Binding Shift}" />
+                        <DataGridCheckBoxColumn Header="Ctrl" Width="60" Binding="{Binding Ctrl}" />
+                        <DataGridCheckBoxColumn Header="Alt" Width="60" Binding="{Binding Alt}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

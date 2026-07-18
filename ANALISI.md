@@ -148,8 +148,14 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   delle modalità con indicatore a console. Profilo Ascension hardcoded. Architettura modulare
   (Poller / Emulator / Profile / MappingEngine separati dal main loop).
   → [`src/ControllerWarcraft.App`](src/ControllerWarcraft.App/README.md).
-- **Fase 2 — Profili & config:** sistema profili JSON, GUI di remap, profili per Ascension/Classic/Retail.
-- **Fase 3 — UX:** layer multipli, curve sensibilità, overlay indicatore modalità, auto-switch profilo.
+- **Fase 2 — Profili & config:** ✅ *Fatto.* Sistema profili JSON (System.Text.Json) con
+  `ControllerProfile` serializzabile + `ProfileManager` (Core condiviso), preset versionati per
+  Ascension/Classic/Retail in [`profiles/`](profiles/README.md), caricamento del profilo attivo
+  al posto dell'hardcoded (fallback built-in Ascension) e GUI WPF di remap
+  ([`src/ControllerWarcraft.Gui`](src/ControllerWarcraft.Gui/README.md)) per selezione profilo,
+  editing mappature/curve e salvataggio.
+- **Fase 3 — UX:** layer multipli (4° stato +LB+RB), curve sensibilità non lineari, overlay
+  indicatore modalità, auto-switch profilo, editing dei binding di sistema nella GUI.
 - **Fase 4 — Polish:** radial menu overlay, companion addon opzionale, preset per classe.
 
 ## 10. Rilascio & CI/CD
@@ -173,7 +179,21 @@ Prese (Fasi 0-1):
 - **Output:** SendInput via P/Invoke (scelto per semplicità; Interception resta un'opzione futura per robustezza).
 - **Scope MVP:** solo Ascension, con keybind hardcoded. Il profilo generico/multi-versione arriva in Fase 2.
 
+Prese (Fase 2):
+- **Formato config:** JSON via `System.Text.Json`, enum serializzati per nome, file leggibili
+  e commit-abili. Schema versionato con `schemaVersion` per migrazioni future.
+- **Architettura:** libreria condivisa `ControllerWarcraft.Core` (schema + `ProfileManager` +
+  preset) referenziata sia dall'App (runtime) sia dalla Gui (editor), così l'enum `ScanCode` e i
+  tipi di profilo sono un'unica fonte di verità.
+- **Posizione profili:** preset sola-lettura accanto all'eseguibile (`<exe>/profiles/`, versionati
+  nel repo); profili utente in `%APPDATA%/ControllerWarcraft/profiles/`. A parità di nome vince
+  l'utente. Profilo attivo in `%APPDATA%/ControllerWarcraft/settings.json`.
+- **GUI:** WPF (come da §6), MVVM leggero, nessun invio di input reale (solo editing profili).
+
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.
 - Companion addon: sì/no e per quali versioni.
 - Layer aggiuntivo +LB+RB (4° stato) se servono più slot.
+- Editing dei binding di sistema (Salto/Tab-target/Annulla) e delle mappe movimento dalla GUI
+  (per ora modificabili nel JSON; la GUI li mostra in sola lettura). Rinviato alla Fase 3.
+- Curve di sensibilità non lineari (accelerazione): oggi la sensibilità è un fattore lineare.

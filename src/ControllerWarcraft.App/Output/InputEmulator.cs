@@ -1,9 +1,9 @@
 using ControllerWarcraft.App.Native;
-using ControllerWarcraft.App.Profiles;
+using ControllerWarcraft.Core.Profiles;
 
 namespace ControllerWarcraft.App.Output;
 
-using SC = NativeMethods.ScanCode;
+using SC = ControllerWarcraft.Core.Input.ScanCode;
 
 /// <summary>
 /// Output Emulator (ANALISI §5): unico punto che inietta tastiera/mouse via SendInput.
