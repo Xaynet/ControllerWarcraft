@@ -68,18 +68,25 @@ public sealed class ControllerProfile
 }
 
 /// <summary>Impostazioni del movimento (stick sinistro → WASD digitale).</summary>
-public sealed class MovementSettings
+public sealed class MovementSettings : ObservableModel
 {
-    public ScanCode Forward { get; set; } = ScanCode.W;
-    public ScanCode Back { get; set; } = ScanCode.S;
-    public ScanCode Left { get; set; } = ScanCode.A;
-    public ScanCode Right { get; set; } = ScanCode.D;
+    private ScanCode _forward = ScanCode.W;
+    private ScanCode _back = ScanCode.S;
+    private ScanCode _left = ScanCode.A;
+    private ScanCode _right = ScanCode.D;
+    private double _threshold = 0.5;
+    private double _deadzone = 0.2395;
+
+    public ScanCode Forward { get => _forward; set => SetField(ref _forward, value); }
+    public ScanCode Back { get => _back; set => SetField(ref _back, value); }
+    public ScanCode Left { get => _left; set => SetField(ref _left, value); }
+    public ScanCode Right { get => _right; set => SetField(ref _right, value); }
 
     /// <summary>Ampiezza dell'asse (0..1) oltre la quale il tasto WASD si considera premuto.</summary>
-    public double Threshold { get; set; } = 0.5;
+    public double Threshold { get => _threshold; set => SetField(ref _threshold, value); }
 
     /// <summary>Deadzone radiale dello stick sinistro, normalizzata (0..1). Default XInput ≈ 0.24.</summary>
-    public double Deadzone { get; set; } = 0.2395;
+    public double Deadzone { get => _deadzone; set => SetField(ref _deadzone, value); }
 }
 
 /// <summary>Impostazioni del mouselook (stick destro in modalita' Movimento/Combattimento).</summary>
@@ -112,13 +119,16 @@ public sealed class MouselookSettings : ObservableModel
 }
 
 /// <summary>Impostazioni della modalita' cursore (stick destro → cursore virtuale).</summary>
-public sealed class CursorSettings
+public sealed class CursorSettings : ObservableModel
 {
+    private double _speed = 16.0;
+    private bool _invertY = false;
+
     /// <summary>Pixel di spostamento cursore per tick a stick pieno.</summary>
-    public double Speed { get; set; } = 16.0;
+    public double Speed { get => _speed; set => SetField(ref _speed, value); }
 
     /// <summary>Inverte l'asse verticale del cursore (raro; di norma false).</summary>
-    public bool InvertY { get; set; } = false;
+    public bool InvertY { get => _invertY; set => SetField(ref _invertY, value); }
 }
 
 /// <summary>Binding "di sistema" usati direttamente dal MappingEngine, fuori dalla tabella layer.</summary>
