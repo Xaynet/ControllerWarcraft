@@ -18,6 +18,7 @@ semplici **profili JSON**. Il mapping è rigorosamente **1:1**, senza automazion
 - **[QUICKSTART.md](QUICKSTART.md)** — guida al primo avvio per l'utente finale.
 - **[ANALISI.md](ANALISI.md)** — analisi, architettura e roadmap.
 - **[RELEASING.md](RELEASING.md)** — processo di rilascio (CI/CD, tag).
+- **[CHANGELOG.md](CHANGELOG.md)** — storico delle versioni.
 
 ## Funzionalità
 
