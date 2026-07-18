@@ -7,6 +7,8 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-19
+
 ### Fixed
 - In gioco non veniva recepito alcun input quando il client girava come
   amministratore (comune su Ascension): `cwapp` ora include un manifest
@@ -62,5 +64,6 @@ Prima release pubblica. Giocare a World of Warcraft con controller Xbox su
   [ANALISI](ANALISI.md) (design), [RELEASING](RELEASING.md) (processo di rilascio).
 - Licenza **MIT**.
 
-[Unreleased]: https://github.com/Xaynet/ControllerWarcraft/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Xaynet/ControllerWarcraft/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Xaynet/ControllerWarcraft/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Xaynet/ControllerWarcraft/releases/tag/v0.1.0
