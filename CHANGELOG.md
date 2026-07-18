@@ -7,6 +7,12 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Fixed
+- In gioco non veniva recepito alcun input quando il client girava come
+  amministratore (comune su Ascension): `cwapp` ora include un manifest
+  `requireAdministrator` e si auto-eleva all'avvio, così l'input iniettato
+  raggiunge la finestra elevata (UIPI). La GUI resta non elevata.
+
 ## [0.1.0] - 2026-07-19
 
 Prima release pubblica. Giocare a World of Warcraft con controller Xbox su

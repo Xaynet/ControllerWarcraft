@@ -133,6 +133,12 @@ oppure l'eseguibile compilato:
 foreground (stick sx → `wasd`, X → `1`, LB+X → non stampa ma invia Shift+1, ecc.), poi in gioco.
 Premi **BACK** per fermarti; l'app rilascia sempre ogni tasto all'uscita.
 
+> 🔐 **Elevazione automatica.** `cwapp` include un manifest con
+> `requestedExecutionLevel = requireAdministrator` ([`app.manifest`](app.manifest)):
+> all'avvio richiede i permessi da amministratore (prompt UAC). È **necessario** perché il
+> gioco gira spesso da admin e Windows (UIPI) blocca l'input da un processo non elevato verso
+> una finestra elevata. Con `dotnet run` in fase di sviluppo, avvia il terminale come admin.
+
 ## Architettura del codice
 
 Struttura modulare che rispecchia [ANALISI.md §5](../../ANALISI.md):

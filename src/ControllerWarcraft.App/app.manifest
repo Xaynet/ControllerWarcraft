@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="ControllerWarcraft.App" />
+
+  <!--
+    ControllerWarcraft inietta input di tastiera/mouse via SendInput. I client di
+    gioco (in particolare i launcher dei server privati come Ascension) girano
+    spesso COME AMMINISTRATORE. Per UIPI, un processo non elevato non puo' inviare
+    input a una finestra elevata: senza questo, in gioco non arriva alcun input.
+
+    requireAdministrator forza l'elevazione all'avvio (prompt UAC), cosi' cwapp gira
+    allo stesso livello del gioco e l'input viene recepito. La GUI (cwgui) NON ha
+    questo manifest: edita solo file JSON e non deve girare da admin.
+  -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+  <!-- Compatibilita' dichiarata: Windows 10/11. -->
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+    </application>
+  </compatibility>
+</assembly>

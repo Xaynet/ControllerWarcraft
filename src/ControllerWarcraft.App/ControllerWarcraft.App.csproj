@@ -9,6 +9,9 @@
     <AssemblyName>cwapp</AssemblyName>
     <RootNamespace>ControllerWarcraft.App</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <!-- Elevazione automatica: necessaria per iniettare input verso il gioco
+         (che gira spesso da admin). Vedi app.manifest. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>

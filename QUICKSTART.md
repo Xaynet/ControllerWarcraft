@@ -69,7 +69,8 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 
 ## 6. Gioca
 
-1. Avvia `cwapp.exe`.
+1. Avvia `cwapp.exe` e **accetta il prompt UAC** (serve per inviare input al gioco,
+   che gira da amministratore).
 2. Avvia WoW ed entra in gioco.
 3. L'**overlay** trasparente mostra modalità e layer correnti.
 4. Premi **BACK** per fermare l'app.
@@ -99,10 +100,12 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 
 ## Risoluzione problemi
 
-- **In gioco non registra i tasti, ma sul Blocco note sì.** Se WoW è avviato
-  **come amministratore** (comune con alcuni launcher di private server, es.
-  Ascension), avvia **anche `cwapp.exe` come amministratore**: Windows blocca
-  l'invio di input da un processo non elevato verso una finestra elevata.
+- **In gioco non registra i tasti, ma sul Blocco note sì.** WoW gira spesso
+  **come amministratore** (comune con i launcher dei private server, es. Ascension)
+  e Windows blocca l'invio di input da un processo non elevato verso una finestra
+  elevata. `cwapp.exe` **richiede automaticamente i permessi da amministratore**
+  all'avvio (prompt UAC): **accetta il prompt**. Se lo hai rifiutato, riavvia
+  `cwapp.exe` e conferma. (`cwgui.exe`, l'editor dei profili, non richiede admin.)
 - **Camera troppo veloce o invertita.** Regola sensibilità X/Y e l'inversione
   dell'asse Y in `cwgui.exe`.
 - **Nessun movimento.** Assicurati che la finestra di WoW sia in **primo piano**.
