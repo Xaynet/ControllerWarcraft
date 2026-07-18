@@ -37,11 +37,13 @@ Al push di un tag `v*.*.*`, su runner `windows-latest`:
 
 1. Setup .NET 10 SDK (`actions/setup-dotnet`, `10.x`).
 2. Deriva la versione dal nome del tag (rimuove la `v`).
-3. `dotnet publish` del progetto principale `src/ControllerWarcraft.App`:
-   - self-contained, `win-x64`;
-   - single-file (`PublishSingleFile=true`, native libs incluse nell'estrazione);
-   - versione iniettata da tag.
-4. Comprime l'output in `ControllerWarcraft-vX.Y.Z-win-x64.zip`.
+3. `dotnet publish` dei **due eseguibili**, ciascuno self-contained `win-x64`,
+   single-file (`PublishSingleFile=true`, native libs incluse nell'estrazione),
+   con la versione iniettata da tag:
+   - `src/ControllerWarcraft.App` → `cwapp.exe` (runtime);
+   - `src/ControllerWarcraft.Gui` → `cwgui.exe` (editor dei profili, WPF).
+4. Assembla uno staging con i due exe e una cartella `profiles/` condivisa (i
+   preset JSON dal repo), poi comprime in `ControllerWarcraft-vX.Y.Z-win-x64.zip`.
 5. Crea una **GitHub Release** sul tag e allega lo zip, con **release notes
    generate automaticamente** dai commit/PR (`generate_release_notes: true`).
 
@@ -60,21 +62,27 @@ Spike) su push e pull request verso `main`. I tag sono esclusi dalla CI
 
 ## Cosa viene rilasciato
 
-Il workflow di release pubblica **solo** `src/ControllerWarcraft.App` (il runtime
-`cwapp`), con la cartella `profiles/` dei preset copiata accanto all'eseguibile. La
-**GUI** (`ControllerWarcraft.Gui`) è per ora coperta solo dalla CI (build di verifica);
-non viene ancora impacchettata nella release. Quando la si vorrà distribuire, aggiungere
-un secondo `dotnet publish` in `release.yml` e includerne l'output nello zip.
+Lo zip `ControllerWarcraft-vX.Y.Z-win-x64.zip` contiene:
 
-## Dipendenza dalla Fase 1
+```
+cwapp.exe            # runtime: legge il controller ed emula KB/mouse
+cwgui.exe            # editor dei profili di remap (WPF)
+profiles/
+  ascension.json
+  classic.json
+  retail.json
+  README.md
+RELEASING.md
+```
 
-Il workflow di release punta a
-`src/ControllerWarcraft.App/ControllerWarcraft.App.csproj`, che e' il deliverable
-della **Fase 1** (MVP giocabile). Fino a quando quel progetto non e' presente sul
-branch da cui parte il tag, il job di publish fallira'. Se serve rilasciare prima
-di quel merge (es. uno spike), aggiornare temporaneamente la variabile
-`PROJECT_PATH` in `release.yml` per puntare a
-`src/ControllerWarcraft.Spike/ControllerWarcraft.Spike.csproj`.
+`Overlay` e `Core` sono **librerie**: non hanno un exe proprio ed entrano come
+dipendenze transitive dentro `cwapp.exe`/`cwgui.exe`. Entrambi gli eseguibili
+cercano i preset in `<exe>/profiles`, quindi la singola cartella `profiles/`
+condivisa alla radice dello zip va bene per tutti e due.
+
+I due eseguibili sono definiti nel workflow tramite le variabili `APP_PATH` e
+`GUI_PATH`. Per aggiungere un altro deliverable, aggiungere un `dotnet publish` e
+copiarne l'exe nello staging.
 
 ## Prerequisiti sul remote (da configurare una volta)
 
