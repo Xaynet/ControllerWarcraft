@@ -141,15 +141,25 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
 
 ## 9. Roadmap a fasi (MVP-first)
 
-- **Fase 0 — Spike tecnico:** leggere XInput + iniettare WASD e mouselook. Provare che il concetto funziona su un client (giro per la mappa da controller). *De-risk della parte più incerta.*
-- **Fase 1 — MVP giocabile:** movimento + camera + 1 layer di abilità + tab-target + modalità cursore base. Un profilo hardcoded (Ascension).
+- **Fase 0 — Spike tecnico:** ✅ *Fatto.* Leggere XInput + iniettare WASD e mouselook.
+  Prova di fattibilità dell'approccio esterno. → [`src/ControllerWarcraft.Spike`](src/ControllerWarcraft.Spike/README.md).
+- **Fase 1 — MVP giocabile:** ✅ *Fatto.* Movimento + camera + layer di abilità (LB/RB come
+  shift: Base/+LB/+RB) + tab-target (L3) + modalità cursore (toggle R3) + macchina a stati
+  delle modalità con indicatore a console. Profilo Ascension hardcoded. Architettura modulare
+  (Poller / Emulator / Profile / MappingEngine separati dal main loop).
+  → [`src/ControllerWarcraft.App`](src/ControllerWarcraft.App/README.md).
 - **Fase 2 — Profili & config:** sistema profili JSON, GUI di remap, profili per Ascension/Classic/Retail.
 - **Fase 3 — UX:** layer multipli, curve sensibilità, overlay indicatore modalità, auto-switch profilo.
 - **Fase 4 — Polish:** radial menu overlay, companion addon opzionale, preset per classe.
 
-## 10. Decisioni aperte
+## 10. Decisioni
 
-- Linguaggio/stack definitivo (C#/.NET consigliato).
-- Output: SendInput (semplice) vs Interception driver (robusto).
-- Scope MVP: solo Ascension o profilo generico fin da subito.
+Prese (Fasi 0-1):
+- **Linguaggio/stack:** C# / .NET (target `net10.0-windows`, l'SDK installato).
+- **Output:** SendInput via P/Invoke (scelto per semplicità; Interception resta un'opzione futura per robustezza).
+- **Scope MVP:** solo Ascension, con keybind hardcoded. Il profilo generico/multi-versione arriva in Fase 2.
+
+Ancora aperte:
+- Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.
 - Companion addon: sì/no e per quali versioni.
+- Layer aggiuntivo +LB+RB (4° stato) se servono più slot.
