@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net10.0 e' l'SDK installato; cambiabile in net8.0-windows se installi quel runtime -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>cwspike</AssemblyName>
+    <RootNamespace>ControllerWarcraft.Spike</RootNamespace>
+  </PropertyGroup>
+
+</Project>
