@@ -87,11 +87,19 @@ public static class BuiltInProfiles
             Name = "Retail",
             GameVersion = "Retail",
             Description =
-                "Preset Retail WoW. Stesso schema action bar (1-9 / Shift+1..9 / Ctrl+1..9). " +
-                "Camera di default piu' reattiva (SensX=20, SensY=15). " +
+                "Preset Retail WoW. Stesso schema action bar (1-9 / Shift+1..9 / Ctrl+1..9 / Shift+Ctrl+1..9). " +
+                "Camera di default piu' reattiva (SensX=20, SensY=15) con curva Power (controllo fine al centro). " +
                 "Nota: Retail ha il soft-target; il Tab-target (L3) resta disponibile come alternativa.",
             Movement = new MovementSettings(),
-            Mouselook = new MouselookSettings { SensitivityX = 20.0, SensitivityY = 15.0, InvertY = false },
+            Mouselook = new MouselookSettings
+            {
+                SensitivityX = 20.0,
+                SensitivityY = 15.0,
+                InvertY = false,
+                // Fase 3: curva non lineare di esempio — piu' precisione ai piccoli spostamenti,
+                // piena velocita' a fondo corsa. Ascension/Classic restano lineari (compat Fase 1).
+                Curve = new ResponseCurve { Type = CurveType.Power, Exponent = 1.5 },
+            },
             Cursor = new CursorSettings { Speed = 18.0 },
             System = new SystemBindings
             {
@@ -105,8 +113,9 @@ public static class BuiltInProfiles
     }
 
     /// <summary>
-    /// Popola i tre layer (Base, +LB=Shift, +RB=Ctrl) mappando i pulsanti frontali / D-pad /
-    /// grilletti sugli slot 1-9. Schema condiviso dai preset (identico alla Fase 1).
+    /// Popola i quattro layer mappando i pulsanti frontali / D-pad / grilletti sugli slot 1-9:
+    ///   Base = 1..9, +LB = Shift+1..9, +RB = Ctrl+1..9, +LB+RB = Shift+Ctrl+1..9 (Fase 3).
+    /// Schema condiviso dai preset; i primi tre layer sono identici alla Fase 1.
     /// </summary>
     private static void AddActionBarLayers(ControllerProfile p)
     {
@@ -135,6 +144,7 @@ public static class BuiltInProfiles
             p.Abilities.Add(new AbilityBinding(buttons[i], AbilityLayer.Base, new Keybind(slot)));
             p.Abilities.Add(new AbilityBinding(buttons[i], AbilityLayer.Shoulder_LB, new Keybind(slot, Shift: true)));
             p.Abilities.Add(new AbilityBinding(buttons[i], AbilityLayer.Shoulder_RB, new Keybind(slot, Ctrl: true)));
+            p.Abilities.Add(new AbilityBinding(buttons[i], AbilityLayer.Shoulder_LBRB, new Keybind(slot, Shift: true, Ctrl: true)));
         }
     }
 }

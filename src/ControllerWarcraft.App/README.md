@@ -12,17 +12,26 @@ in un'architettura modulare.
 > per Ascension/Classic/Retail sono in [`profiles/`](../../profiles/README.md) e si modificano
 > dalla [GUI](../ControllerWarcraft.Gui/README.md). Il preset Ascension replica esattamente il
 > comportamento della Fase 1; se nessun file è presente si ricade sul built-in Ascension in codice.
+>
+> **Fase 3 (UX):** overlay indicatore di modalità
+> ([`ControllerWarcraft.Overlay`](../ControllerWarcraft.Overlay/README.md)) accanto alla console;
+> curve di sensibilità del mouselook (dal profilo); **quarto layer +LB+RB** (Shift+Ctrl); e
+> **auto-switch** del profilo in base alla finestra in primo piano, con pausa opzionale fuori gioco.
 
 ## Cosa fa
 
-- **Movimento + camera** — stick sx → WASD, stick dx → mouselook (RMB tenuto + delta mouse).
-- **Layer di abilità** — LB/RB come *shift*: ogni pulsante frontale/D-pad/grilletto ha 3 stati
-  (Base, +LB, +RB), mappati agli slot dell'action bar (1-9, Shift+1-9, Ctrl+1-9).
+- **Movimento + camera** — stick sx → WASD, stick dx → mouselook (RMB tenuto + delta mouse),
+  con **curva di sensibilità** configurabile (Linear/Power/Exponential).
+- **Layer di abilità** — LB/RB come *shift*: ogni pulsante frontale/D-pad/grilletto ha **4 stati**
+  (Base, +LB, +RB, **+LB+RB**), mappati agli slot dell'action bar (1-9, Shift+1-9, Ctrl+1-9,
+  Shift+Ctrl+1-9). Priorità: LB+RB > LB > RB > Base.
 - **Tab-target** — su L3 (click stick sinistro).
 - **Modalità cursore** — toggle su R3: lo stick destro diventa cursore mouse virtuale,
   A = click sinistro, X = click destro, B = Escape. Per loot/vendor/talenti.
 - **Macchina a stati delle modalità** — Movimento/Combattimento ↔ Cursore, con indicatore
-  a console ad ogni cambio di modalità/layer.
+  a console **e overlay** trasparente always-on-top ad ogni cambio di modalità/layer.
+- **Auto-switch profilo** — rileva l'eseguibile in primo piano e carica il profilo associato
+  (mappa in `settings.json`); opzionale: mette in pausa l'emulazione fuori dal gioco.
 - **Profilo da JSON** — i keybind, le curve di sensibilità e le deadzone arrivano dal profilo
   attivo (default: preset Ascension, identico alla Fase 1).
 
@@ -32,11 +41,21 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json` (`activePro
 dalla [GUI](../ControllerWarcraft.Gui/README.md) o a mano. Utility da riga di comando:
 
 ```powershell
-cwapp --list                 # elenca i profili disponibili (preset + utente)
+cwapp --list                 # elenca i profili disponibili (+ stato overlay/auto-switch)
 cwapp --profile classic      # usa 'classic' solo per questa esecuzione
+cwapp --no-overlay           # disabilita l'overlay per questa esecuzione
+cwapp --no-autoswitch        # disabilita l'auto-switch per questa esecuzione
 cwapp --export-presets dir   # rigenera i preset JSON (nessun input inviato)
 cwapp --help
 ```
+
+### Auto-switch profilo (Fase 3)
+
+Con `"autoSwitchEnabled": true` in `settings.json`, l'App controlla ~2 volte al secondo quale
+eseguibile è in primo piano e carica il profilo mappato in `processProfileMap`
+(`nome_processo_senza_exe → file_stem`). Con `"pauseWhenGameNotForeground": true` l'emulazione è
+sospesa (input rilasciati) quando in primo piano non c'è un gioco riconosciuto. Default suggeriti:
+`ascension→ascension`, `wow→retail`, `wowclassic→classic`. Configurabile anche dalla GUI.
 
 Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profiles/README.md).
 
@@ -48,22 +67,23 @@ Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profile
 | Stick destro | Mouselook (RMB + delta mouse) | Cursore mouse virtuale |
 | **LB** (tenuto) | Modificatore layer → **+LB** (Shift) | — |
 | **RB** (tenuto) | Modificatore layer → **+RB** (Ctrl) | — |
+| **LB+RB** (tenuti) | Modificatore layer → **+LB+RB** (Shift+Ctrl) | — |
 | A | Salto (Space) | Click sinistro (tenuto → drag) |
-| X | Abilità (1 / Shift+1 / Ctrl+1) | Click destro |
-| B | Abilità (2 / Shift+2 / Ctrl+2) | Escape |
-| Y | Abilità (3 / Shift+3 / Ctrl+3) | — |
-| Grilletto destro (RT) | Abilità (4 / Shift+4 / Ctrl+4) | — |
-| Grilletto sinistro (LT) | Abilità (5 / Shift+5 / Ctrl+5) | — |
-| D-pad Su | Abilità (6 / Shift+6 / Ctrl+6) | — |
-| D-pad Destra | Abilità (7 / Shift+7 / Ctrl+7) | — |
-| D-pad Giù | Abilità (8 / Shift+8 / Ctrl+8) | — |
-| D-pad Sinistra | Abilità (9 / Shift+9 / Ctrl+9) | — |
+| X | Abilità (1 / Shift+1 / Ctrl+1 / Shift+Ctrl+1) | Click destro |
+| B | Abilità (2 / …) | Escape |
+| Y | Abilità (3 / …) | — |
+| Grilletto destro (RT) | Abilità (4 / …) | — |
+| Grilletto sinistro (LT) | Abilità (5 / …) | — |
+| D-pad Su | Abilità (6 / …) | — |
+| D-pad Destra | Abilità (7 / …) | — |
+| D-pad Giù | Abilità (8 / …) | — |
+| D-pad Sinistra | Abilità (9 / …) | — |
 | **L3** (click stick sx) | Tab-target | — |
 | **R3** (click stick dx) | Toggle → Cursore | Toggle → Movimento |
 | Back | Uscita pulita | Uscita pulita |
 
-> Il layer si sceglie **tenendo premuto** LB o RB mentre si preme il pulsante abilità.
-> Se entrambi sono premuti, LB ha priorità.
+> Il layer si sceglie **tenendo premuto** LB e/o RB mentre si preme il pulsante abilità.
+> Priorità: **LB+RB > LB > RB > Base**.
 
 ## Configurazione lato WoW (una tantum)
 
@@ -110,12 +130,19 @@ Struttura modulare che rispecchia [ANALISI.md §5](../../ANALISI.md):
   Native/    NativeMethods     P/Invoke XInput + SendInput (usa Core.ScanCode)
   Input/     GamepadPoller     XInput → GamepadSnapshot (deadzone dal profilo)
              GamepadSnapshot   DTO immutabile dello stato gamepad
+             ForegroundWatcher GetForegroundWindow → nome processo (auto-switch, Fase 3)
   Output/    InputEmulator     SendInput: hold/tap tasti, mouselook, click; ReleaseAll
   Engine/    ControllerMode    enum modalità
-             MappingEngine     cuore: state machine + layer, legge i parametri dal profilo
-  Program.cs                   main loop + sotto-comandi (--list/--profile/--export-presets)
+             MappingEngine     cuore: state machine + 4 layer, curva mouselook dal profilo
+             EngineHost        possiede poller+engine+profilo; swap del profilo a caldo
+  Program.cs                   main loop + overlay + auto-switch + sotto-comandi
+
+(Overlay, WPF — vedi ControllerWarcraft.Overlay/README.md)
+  ModeOverlayController         host STA + Dispatcher, API thread-safe con dedup
+  OverlayWindow / OverlayState  finestra trasparente click-through + DTO di stato
 ```
 
-Il **MappingEngine** legge tutti i parametri (mappature, sensibilità, deadzone, soglie) dal
-`ControllerProfile`: resta separato dal main loop e dall'I/O ed è pronto per la Fase 3 (curve di
-sensibilità non lineari, overlay) e per i test.
+Il **MappingEngine** legge tutti i parametri (mappature, sensibilità, curva, deadzone, soglie) dal
+`ControllerProfile`: resta separato dal main loop e dall'I/O. L'**EngineHost** lo incapsula per
+permettere l'auto-switch del profilo senza ricostruire il loop; l'**overlay** vive in un progetto
+WPF a sé, ospitato su un thread STA.

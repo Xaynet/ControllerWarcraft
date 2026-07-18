@@ -15,8 +15,10 @@ namespace ControllerWarcraft.Core.Profiles;
 /// </summary>
 public sealed class ControllerProfile
 {
-    /// <summary>Versione dello schema del file (SemVer-ish). Serve alla migrazione futura.</summary>
-    public string SchemaVersion { get; set; } = "1.0";
+    /// <summary>Versione dello schema del file (SemVer-ish). Serve alla migrazione futura.
+    /// v1.1 (Fase 3): aggiunta <see cref="MouselookSettings.Curve"/> e il layer <c>Shoulder_LBRB</c>.
+    /// I file v1.0 restano leggibili: i campi nuovi hanno default retro-compatibili.</summary>
+    public string SchemaVersion { get; set; } = "1.1";
 
     /// <summary>Nome leggibile del profilo (mostrato nella GUI e nella selezione).</summary>
     public string Name { get; set; } = "";
@@ -94,6 +96,13 @@ public sealed class MouselookSettings
 
     /// <summary>Deadzone radiale dello stick destro, normalizzata (0..1). Default XInput ≈ 0.265.</summary>
     public double Deadzone { get; set; } = 0.2652;
+
+    /// <summary>
+    /// Curva di risposta (Fase 3) applicata all'ampiezza dello stick destro prima della sensibilità.
+    /// Default <see cref="CurveType.Linear"/> = comportamento storico; un profilo senza questo campo
+    /// si comporta esattamente come prima.
+    /// </summary>
+    public ResponseCurve Curve { get; set; } = new();
 }
 
 /// <summary>Impostazioni della modalita' cursore (stick destro → cursore virtuale).</summary>

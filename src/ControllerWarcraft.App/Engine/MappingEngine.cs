@@ -80,8 +80,11 @@ public sealed class MappingEngine
         _out.SetRightMouseHeld(look);
         if (look)
         {
-            int dx = (int)Math.Round(s.RightX * LookSensX);
-            int dy = (int)Math.Round(s.RightY * LookSensY) * (InvertLookY ? 1 : -1);
+            // Fase 3: curva di sensibilità applicata all'ampiezza dello stick (per-asse, con segno),
+            // poi moltiplicata per la sensibilità. Con curva Linear equivale al calcolo precedente.
+            var curve = _profile.Mouselook.Curve;
+            int dx = (int)Math.Round(curve.Apply(s.RightX) * LookSensX);
+            int dy = (int)Math.Round(curve.Apply(s.RightY) * LookSensY) * (InvertLookY ? 1 : -1);
             _out.MouseMove(dx, dy);
         }
 
@@ -108,7 +111,9 @@ public sealed class MappingEngine
 
     private void UpdateLayer(in GamepadSnapshot s)
     {
-        var layer = s.LeftShoulder ? AbilityLayer.Shoulder_LB
+        // Priorità: LB+RB (4° layer, Fase 3) > LB > RB > Base.
+        var layer = s.LeftShoulder && s.RightShoulder ? AbilityLayer.Shoulder_LBRB
+                  : s.LeftShoulder ? AbilityLayer.Shoulder_LB
                   : s.RightShoulder ? AbilityLayer.Shoulder_RB
                   : AbilityLayer.Base;
 
@@ -180,11 +185,12 @@ public sealed class MappingEngine
         _ => m.ToString(),
     };
 
-    private static string LayerLabel(AbilityLayer l) => l switch
+    public static string LayerLabel(AbilityLayer l) => l switch
     {
         AbilityLayer.Base => "BASE (1-9)",
         AbilityLayer.Shoulder_LB => "+LB (Shift)",
         AbilityLayer.Shoulder_RB => "+RB (Ctrl)",
+        AbilityLayer.Shoulder_LBRB => "+LB+RB (Shift+Ctrl)",
         _ => l.ToString(),
     };
 }

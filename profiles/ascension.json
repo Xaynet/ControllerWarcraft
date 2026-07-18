@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "name": "Ascension",
   "gameVersion": "Ascension",
   "description": "Preset Ascension WoW — replica esatta della Fase 1 (MVP). Assunzioni action bar in gioco: barra principale su 1-9, barra secondaria su Shift+1..9 (LB), terza barra su Ctrl+1..9 (RB). A=Salto, L3=Tab-target, R3=toggle cursore.",
@@ -15,7 +15,11 @@
     "sensitivityX": 18,
     "sensitivityY": 14,
     "invertY": false,
-    "deadzone": 0.2652
+    "deadzone": 0.2652,
+    "curve": {
+      "type": "Linear",
+      "exponent": 1.5
+    }
   },
   "cursor": {
     "speed": 16,
@@ -73,6 +77,16 @@
       }
     },
     {
+      "button": "X",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D1",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "B",
       "layer": "Base",
       "bind": {
@@ -98,6 +112,16 @@
       "bind": {
         "key": "D2",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "B",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D2",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }
@@ -133,6 +157,16 @@
       }
     },
     {
+      "button": "Y",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D3",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "RightTrigger",
       "layer": "Base",
       "bind": {
@@ -158,6 +192,16 @@
       "bind": {
         "key": "D4",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "RightTrigger",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D4",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }
@@ -193,6 +237,16 @@
       }
     },
     {
+      "button": "LeftTrigger",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D5",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "DPadUp",
       "layer": "Base",
       "bind": {
@@ -218,6 +272,16 @@
       "bind": {
         "key": "D6",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadUp",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D6",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }
@@ -253,6 +317,16 @@
       }
     },
     {
+      "button": "DPadRight",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D7",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "DPadDown",
       "layer": "Base",
       "bind": {
@@ -283,6 +357,16 @@
       }
     },
     {
+      "button": "DPadDown",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D8",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "DPadLeft",
       "layer": "Base",
       "bind": {
@@ -308,6 +392,16 @@
       "bind": {
         "key": "D9",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadLeft",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D9",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }

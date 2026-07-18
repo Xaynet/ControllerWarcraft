@@ -154,8 +154,13 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   al posto dell'hardcoded (fallback built-in Ascension) e GUI WPF di remap
   ([`src/ControllerWarcraft.Gui`](src/ControllerWarcraft.Gui/README.md)) per selezione profilo,
   editing mappature/curve e salvataggio.
-- **Fase 3 — UX:** layer multipli (4° stato +LB+RB), curve sensibilità non lineari, overlay
-  indicatore modalità, auto-switch profilo, editing dei binding di sistema nella GUI.
+- **Fase 3 — UX:** ✅ *Fatto.* Overlay indicatore di modalità (WPF trasparente, click-through,
+  non ruba il focus → [`src/ControllerWarcraft.Overlay`](src/ControllerWarcraft.Overlay/README.md)),
+  curve di sensibilità del mouselook (Linear/Power/Exponential in `ResponseCurve`, Core), quarto
+  layer +LB+RB (Shift+Ctrl) come 4° stato dei modificatori, auto-switch profilo in base alla
+  finestra in primo piano (mappa processo→profilo in `settings.json`, con pausa opzionale fuori
+  gioco) ed editing dei binding di sistema e delle curve nella GUI. Schema profilo a `v1.1`,
+  retro-compatibile con i file `v1.0`.
 - **Fase 4 — Polish:** radial menu overlay, companion addon opzionale, preset per classe.
 
 ## 10. Rilascio & CI/CD
@@ -190,10 +195,26 @@ Prese (Fase 2):
   l'utente. Profilo attivo in `%APPDATA%/ControllerWarcraft/settings.json`.
 - **GUI:** WPF (come da §6), MVVM leggero, nessun invio di input reale (solo editing profili).
 
+Prese (Fase 3):
+- **Overlay:** progetto WPF dedicato `ControllerWarcraft.Overlay` (libreria) ospitato dall'App
+  su un thread STA con Dispatcher proprio. Motivazione: l'App resta un loop console sottile e le
+  dipendenze WPF sono isolate in un componente riusabile e disaccoppiato (API a soli tipi semplici,
+  nessun riferimento a App/Core). Click-through via stili estesi `WS_EX_TRANSPARENT | LAYERED |
+  NOACTIVATE | TOOLWINDOW`. Fallback silenzioso al solo indicatore console se la UI non è disponibile.
+- **Curve di sensibilità:** tipo `ResponseCurve` nel Core (Linear/Power/Exponential + esponente),
+  applicato per-asse allo stick destro nel mouselook. Default `Linear` = comportamento storico
+  (retro-compat). Editabile dalla GUI e presente nei preset JSON.
+- **Layer +LB+RB:** aggiunto `AbilityLayer.Shoulder_LBRB` (priorità LB+RB > LB > RB > Base);
+  preset mappano Shift+Ctrl+1..9. I profili senza questo layer restano validi (No-op).
+- **Auto-switch:** logica di mapping processo→profilo pura nel Core (`AutoSwitchResolver`), lettura
+  della finestra in primo piano nell'App (`ForegroundWatcher`, GetForegroundWindow +
+  GetWindowThreadProcessId). Config in `settings.json` (`autoSwitchEnabled`,
+  `pauseWhenGameNotForeground`, `processProfileMap`), tutti con default retro-compatibili.
+- **Editing GUI:** binding di sistema (Salto/Tab-target/Annulla) e curve ora modificabili;
+  aggiunto pannello impostazioni globali (overlay + auto-switch) che scrive `settings.json`.
+
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.
 - Companion addon: sì/no e per quali versioni.
-- Layer aggiuntivo +LB+RB (4° stato) se servono più slot.
-- Editing dei binding di sistema (Salto/Tab-target/Annulla) e delle mappe movimento dalla GUI
-  (per ora modificabili nel JSON; la GUI li mostra in sola lettura). Rinviato alla Fase 3.
-- Curve di sensibilità non lineari (accelerazione): oggi la sensibilità è un fattore lineare.
+- Editing dei tasti di movimento (WASD) dalla GUI: per ora modificabili nel JSON.
+- Radial menu nell'overlay e preset per classe (Fase 4).

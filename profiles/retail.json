@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "name": "Retail",
   "gameVersion": "Retail",
-  "description": "Preset Retail WoW. Stesso schema action bar (1-9 / Shift+1..9 / Ctrl+1..9). Camera di default piu' reattiva (SensX=20, SensY=15). Nota: Retail ha il soft-target; il Tab-target (L3) resta disponibile come alternativa.",
+  "description": "Preset Retail WoW. Stesso schema action bar (1-9 / Shift+1..9 / Ctrl+1..9 / Shift+Ctrl+1..9). Camera di default piu' reattiva (SensX=20, SensY=15) con curva Power (controllo fine al centro). Nota: Retail ha il soft-target; il Tab-target (L3) resta disponibile come alternativa.",
   "movement": {
     "forward": "W",
     "back": "S",
@@ -15,7 +15,11 @@
     "sensitivityX": 20,
     "sensitivityY": 15,
     "invertY": false,
-    "deadzone": 0.2652
+    "deadzone": 0.2652,
+    "curve": {
+      "type": "Power",
+      "exponent": 1.5
+    }
   },
   "cursor": {
     "speed": 18,
@@ -73,6 +77,16 @@
       }
     },
     {
+      "button": "X",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D1",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "B",
       "layer": "Base",
       "bind": {
@@ -98,6 +112,16 @@
       "bind": {
         "key": "D2",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "B",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D2",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }
@@ -133,6 +157,16 @@
       }
     },
     {
+      "button": "Y",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D3",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "RightTrigger",
       "layer": "Base",
       "bind": {
@@ -158,6 +192,16 @@
       "bind": {
         "key": "D4",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "RightTrigger",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D4",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }
@@ -193,6 +237,16 @@
       }
     },
     {
+      "button": "LeftTrigger",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D5",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "DPadUp",
       "layer": "Base",
       "bind": {
@@ -218,6 +272,16 @@
       "bind": {
         "key": "D6",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadUp",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D6",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }
@@ -253,6 +317,16 @@
       }
     },
     {
+      "button": "DPadRight",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D7",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "DPadDown",
       "layer": "Base",
       "bind": {
@@ -283,6 +357,16 @@
       }
     },
     {
+      "button": "DPadDown",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D8",
+        "shift": true,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
       "button": "DPadLeft",
       "layer": "Base",
       "bind": {
@@ -308,6 +392,16 @@
       "bind": {
         "key": "D9",
         "shift": false,
+        "ctrl": true,
+        "alt": false
+      }
+    },
+    {
+      "button": "DPadLeft",
+      "layer": "Shoulder_LBRB",
+      "bind": {
+        "key": "D9",
+        "shift": true,
         "ctrl": true,
         "alt": false
       }

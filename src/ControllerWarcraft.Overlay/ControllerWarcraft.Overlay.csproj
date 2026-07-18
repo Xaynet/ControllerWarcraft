@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Libreria WPF (nessun OutputType => Library): l'overlay indicatore di modalità.
+         È referenziata dall'App (console) che la ospita su un thread STA dedicato.
+         Non dipende né da App né da Core: la sua API è fatta di tipi semplici, così resta
+         disaccoppiata e riusabile. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>ControllerWarcraft.Overlay</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+</Project>

@@ -14,6 +14,8 @@
   <ItemGroup>
     <!-- Schema profili, ProfileManager e preset (condivisi con la Gui). -->
     <ProjectReference Include="..\ControllerWarcraft.Core\ControllerWarcraft.Core.csproj" />
+    <!-- Overlay indicatore di modalità (WPF, Fase 3). L'App lo ospita su un thread STA. -->
+    <ProjectReference Include="..\ControllerWarcraft.Overlay\ControllerWarcraft.Overlay.csproj" />
   </ItemGroup>
 
   <ItemGroup>

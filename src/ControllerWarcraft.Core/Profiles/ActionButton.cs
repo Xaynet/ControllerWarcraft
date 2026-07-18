@@ -21,12 +21,18 @@ public enum ActionButton
 
 /// <summary>
 /// Il layer di abilita' attivo, deciso dai modificatori LB/RB (ANALISI §4).
-/// Fase 1/2: tre stati (Base, +LB, +RB). LB ha priorita' se entrambi premuti.
-/// In JSON viene serializzato per nome.
+/// Fase 1/2: tre stati (Base, +LB, +RB). Fase 3: aggiunto il quarto stato
+/// <see cref="Shoulder_LBRB"/> (LB+RB premuti insieme) per gli slot azione aggiuntivi.
+/// Priorita' di selezione: LB+RB &gt; LB &gt; RB &gt; Base.
+/// In JSON viene serializzato per nome; i profili senza voci per <see cref="Shoulder_LBRB"/>
+/// restano validi (quel layer risolve a No-op).
 /// </summary>
 public enum AbilityLayer
 {
     Base,
     Shoulder_LB,
     Shoulder_RB,
+
+    /// <summary>Quarto layer (Fase 3): LB e RB tenuti insieme. Preset: Shift+Ctrl+1..9.</summary>
+    Shoulder_LBRB,
 }

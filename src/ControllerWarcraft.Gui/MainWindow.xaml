@@ -5,8 +5,8 @@
         xmlns:prof="clr-namespace:ControllerWarcraft.Core.Profiles;assembly=ControllerWarcraft.Core"
         xmlns:keys="clr-namespace:ControllerWarcraft.Core.Input;assembly=ControllerWarcraft.Core"
         xmlns:vm="clr-namespace:ControllerWarcraft.Gui.ViewModels"
-        Title="ControllerWarcraft — Editor Profili (Fase 2)"
-        Height="720" Width="1040" MinHeight="520" MinWidth="820">
+        Title="ControllerWarcraft — Editor Profili (Fase 3)"
+        Height="800" Width="1080" MinHeight="560" MinWidth="860">
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -27,6 +27,11 @@
         <ObjectDataProvider x:Key="KeyValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="keys:ScanCode" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="CurveValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:CurveType" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
@@ -128,6 +133,19 @@
                                 <Slider Minimum="0" Maximum="0.9" TickFrequency="0.05" IsSnapToTickEnabled="True"
                                         Value="{Binding Mouselook.Deadzone}" VerticalAlignment="Center" />
                             </DockPanel>
+
+                            <!-- Fase 3: curva di sensibilità (Linear / Power / Exponential). -->
+                            <TextBlock Text="Curva di risposta" Style="{StaticResource Label}" />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource CurveValues}}"
+                                      SelectedItem="{Binding MouselookCurve.Type}" />
+                            <TextBlock Text="Intensità curva (esponente / durezza)" Style="{StaticResource Label}"
+                                       ToolTip="Ignorato con curva Linear. Power: 1=lineare, &gt;1 = più preciso al centro. Exponential: più alto = accelerazione più marcata." />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding MouselookCurve.Exponent, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="0.2" Maximum="4" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                        Value="{Binding MouselookCurve.Exponent}" VerticalAlignment="Center" />
+                            </DockPanel>
                         </StackPanel>
                     </GroupBox>
 
@@ -168,17 +186,38 @@
                         <StackPanel>
                             <TextBlock Text="Salto" Style="{StaticResource Label}" />
                             <ComboBox ItemsSource="{Binding Source={StaticResource KeyValues}}"
-                                      SelectedItem="{Binding System.Jump.Key, Mode=OneWay}"
-                                      IsEnabled="False"
-                                      ToolTip="I binding di sistema si modificano dal JSON in questa fase." />
+                                      SelectedItem="{Binding JumpBind.Key}" />
                             <TextBlock Text="Tab-target" Style="{StaticResource Label}" />
                             <ComboBox ItemsSource="{Binding Source={StaticResource KeyValues}}"
-                                      SelectedItem="{Binding System.TabTarget.Key, Mode=OneWay}"
-                                      IsEnabled="False" />
+                                      SelectedItem="{Binding TabTargetBind.Key}" />
                             <TextBlock Text="Annulla (cursore)" Style="{StaticResource Label}" />
                             <ComboBox ItemsSource="{Binding Source={StaticResource KeyValues}}"
-                                      SelectedItem="{Binding System.CursorCancel.Key, Mode=OneWay}"
-                                      IsEnabled="False" />
+                                      SelectedItem="{Binding CursorCancelBind.Key}" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Impostazioni globali (overlay &amp; auto-switch) — settings.json">
+                        <StackPanel>
+                            <CheckBox Content="Mostra overlay indicatore di modalità"
+                                      IsChecked="{Binding ShowOverlay}" Margin="0,2" />
+                            <CheckBox Content="Auto-switch profilo (finestra in primo piano)"
+                                      IsChecked="{Binding AutoSwitchEnabled}" Margin="0,2" />
+                            <CheckBox Content="Pausa quando il gioco non è in primo piano"
+                                      IsChecked="{Binding PauseWhenGameNotForeground}" Margin="0,2" />
+
+                            <TextBlock Text="Mappa processo → profilo" Style="{StaticResource Label}" />
+                            <TextBlock Text="Nome eseguibile senza .exe (es. wow) → file stem profilo (es. retail)."
+                                       Foreground="#777" TextWrapping="Wrap" Margin="0,0,0,4" FontSize="11" />
+                            <DataGrid ItemsSource="{Binding ProcessMap}" AutoGenerateColumns="False"
+                                      CanUserAddRows="True" CanUserDeleteRows="True" MinHeight="90" MaxHeight="160"
+                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Processo" Width="*" Binding="{Binding Process}" />
+                                    <DataGridTextColumn Header="Profilo" Width="*" Binding="{Binding ProfileStem}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <Button Content="Salva impostazioni" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                    MinWidth="150" Command="{Binding SaveSettingsCommand}" />
                         </StackPanel>
                     </GroupBox>
 
