@@ -72,3 +72,7 @@ Il mapping è **1:1**, senza automazione: è l'uso tollerato dei remapper di inp
 **Ascension** è un server privato con client custom — verifica le regole del server
 sugli strumenti di input esterni prima di usarlo. La responsabilità dell'uso è
 dell'utente finale.
+
+## Licenza
+
+Distribuito sotto licenza **MIT**. Vedi [LICENSE](LICENSE).
