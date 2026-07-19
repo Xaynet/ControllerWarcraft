@@ -31,6 +31,34 @@ public sealed class AppSettings
     /// <summary>Mostra l'overlay trasparente always-on-top con la modalità/layer correnti.</summary>
     public bool ShowOverlay { get; set; } = true;
 
+    // ---------------------------------------------------------------- button-legend HUD (overlay)
+
+    /// <summary>
+    /// Mostra la <b>button-legend a layer</b>: un pannello discreto, semi-trasparente e click-through
+    /// che elenca cosa fa ogni pulsante mappabile <i>nel layer corrente</i>, aggiornandosi quando si
+    /// tiene premuto LB/RB. Aiuta a ricordare le abilità dei 4 layer (Base/+LB/+RB/+LB+RB). Default
+    /// <c>true</c>. Retro-compatibile: assente ⇒ default.
+    /// </summary>
+    public bool ShowButtonLegend { get; set; } = true;
+
+    /// <summary>
+    /// Modalità di visibilità della button-legend. Default
+    /// <see cref="LegendVisibilityMode.WhileModifierHeld"/>: la legenda compare solo mentre si tiene
+    /// un modificatore LB/RB (elegante, appare quando serve ricordare un layer). L'alternativa
+    /// <see cref="LegendVisibilityMode.AlwaysVisible"/> la tiene sempre a schermo.
+    /// </summary>
+    public LegendVisibilityMode LegendVisibility { get; set; } = LegendVisibilityMode.WhileModifierHeld;
+
+    /// <summary>Angolo dello schermo in cui ancorare la button-legend. Default in basso a destra.</summary>
+    public ScreenCorner LegendCorner { get; set; } = ScreenCorner.BottomRight;
+
+    /// <summary>
+    /// Mostra un <b>indicatore evidente della modalità cursore</b>: una sottile cornice colorata ai
+    /// bordi dello schermo (overlay click-through) + un badge, così è impossibile non accorgersi di
+    /// essere in modalità cursore. Default <c>true</c>. Retro-compatibile: assente ⇒ default.
+    /// </summary>
+    public bool ShowCursorIndicator { get; set; } = true;
+
     // ---------------------------------------------------------------- auto-switch (Fase 3, punto 4)
 
     /// <summary>

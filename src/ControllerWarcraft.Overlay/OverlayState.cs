@@ -18,10 +18,17 @@ public enum OverlayMode
 /// <param name="Paused">Se l'emulazione è in pausa (gioco non in primo piano): overlay attenuato + "PAUSA".</param>
 /// <param name="ProfileName">Nome del profilo attivo (piccolo, in fondo).</param>
 /// <param name="CompanionText">Contesto opzionale dal companion addon (es. "Target: Hogger (87%)"); vuoto se assente/disattivo.</param>
+/// <param name="CursorIndicator">
+/// Se true, in modalità cursore l'overlay mostra un indicatore <b>evidente</b> (cornice colorata ai
+/// bordi dello schermo + badge), così è impossibile non accorgersi di essere in modalità cursore.
+/// L'App lo alimenta dal flag di configurazione; l'indicatore compare solo quando
+/// <see cref="Mode"/> è <see cref="OverlayMode.Cursor"/> e non si è in pausa.
+/// </param>
 public readonly record struct OverlayState(
     OverlayMode Mode,
     string ModeText,
     string LayerText,
     bool Paused,
     string ProfileName,
-    string CompanionText = "");
+    string CompanionText = "",
+    bool CursorIndicator = true);

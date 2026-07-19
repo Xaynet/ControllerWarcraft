@@ -1,0 +1,35 @@
+<Window x:Class="ControllerWarcraft.Overlay.LegendWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
+        IsHitTestVisible="False"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight">
+
+    <!-- Pannello discreto, semi-trasparente, click-through: la button-legend a layer.
+         Le righe (pulsante → keybind) sono generate dal code-behind in base allo stato. -->
+    <Border x:Name="RootBorder" CornerRadius="8" Padding="12,8"
+            Background="#CC12161C" BorderBrush="#552E7D32" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="10" ShadowDepth="0" Opacity="0.45" />
+        </Border.Effect>
+        <StackPanel>
+            <TextBlock x:Name="HeaderText"
+                       Text="BASE (1-9)"
+                       Foreground="#FF8BC34A" FontFamily="Segoe UI" FontWeight="Bold"
+                       FontSize="12" Margin="0,0,0,5" />
+            <Grid x:Name="RowsGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" MinWidth="46" />
+                </Grid.ColumnDefinitions>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

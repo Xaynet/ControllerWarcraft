@@ -147,6 +147,10 @@ public sealed class MainViewModel : ObservableObject
     {
         _settings = _manager.LoadSettings();
         OnPropertyChanged(nameof(ShowOverlay));
+        OnPropertyChanged(nameof(ShowButtonLegend));
+        OnPropertyChanged(nameof(LegendVisibility));
+        OnPropertyChanged(nameof(LegendCorner));
+        OnPropertyChanged(nameof(ShowCursorIndicator));
         OnPropertyChanged(nameof(AutoSwitchEnabled));
         OnPropertyChanged(nameof(PauseWhenGameNotForeground));
         LoadSettingsIntoProcessMap();
@@ -196,6 +200,32 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _settings.ShowOverlay;
         set { _settings.ShowOverlay = value; OnPropertyChanged(); }
+    }
+
+    // -------------------------------------------------------------- button-legend HUD + indicatore cursore
+
+    public bool ShowButtonLegend
+    {
+        get => _settings.ShowButtonLegend;
+        set { _settings.ShowButtonLegend = value; OnPropertyChanged(); }
+    }
+
+    public LegendVisibilityMode LegendVisibility
+    {
+        get => _settings.LegendVisibility;
+        set { _settings.LegendVisibility = value; OnPropertyChanged(); }
+    }
+
+    public ScreenCorner LegendCorner
+    {
+        get => _settings.LegendCorner;
+        set { _settings.LegendCorner = value; OnPropertyChanged(); }
+    }
+
+    public bool ShowCursorIndicator
+    {
+        get => _settings.ShowCursorIndicator;
+        set { _settings.ShowCursorIndicator = value; OnPropertyChanged(); }
     }
 
     public bool AutoSwitchEnabled

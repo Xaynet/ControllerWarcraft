@@ -220,6 +220,27 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   - **Test aggiunti**: `ControllerReading.FromRaw` (normalizzazione pura raw→normalizzato), logica di
     onboarding (`NeedsSetup`, retro-compat del flag, `MarkSetupCompleted`, contenuti informativi).
 
+- **Overlay: button-legend a layer + indicatore cursore evidente (post-Fase 4):** ✅ *Fatto.* Due
+  attriti in gioco: (a) ricordare cosa fa ogni pulsante con 4 layer (Base/+LB/+RB/+LB+RB); (b) un
+  tester si è confuso perché era in modalità cursore senza accorgersene. Due aggiunte all'overlay
+  (che resta esterno e pura presentazione: conosce solo controller/modalità/layer/profilo):
+  - **Button-legend (HUD)**: pannello discreto, semi-trasparente, click-through che mostra cosa fa
+    ogni pulsante mappabile **nel layer corrente** (`X → Shift+1`, `RT → Ctrl+4`, …), aggiornandosi
+    quando si tiene premuto LB/RB. La **derivazione è logica pura nel Core** (`ButtonLegend.Build`:
+    profilo + `AbilityLayer` → righe pulsante/keybind; predisposto un campo per etichette leggibili
+    di abilità, oggi vuoto), coperta da test (tutti i pulsanti, tutti i layer, pulsanti non mappati)
+    insieme alla decisione di visibilità (`ButtonLegend.ShouldShow`). L'App calcola le righe **solo
+    al cambio layer/modalità** e le passa all'overlay via `ModeOverlayController.UpdateLegend` (dedup
+    → niente flicker). Configurabile (`settings.json` + GUI): on/off, visibilità *sempre* oppure
+    *solo mentre tieni un modificatore* (default), angolo dello schermo (default in basso a destra).
+  - **Indicatore modalità cursore**: in modalità cursore una **cornice colorata ai bordi dello
+    schermo** + un **badge** rendono la modalità inconfondibile. Riusa `OverlayState`/
+    `ModeOverlayController` (nuovo flag `CursorIndicator`); click-through, non copre il gioco.
+    Configurabile (on/off, default on).
+  - **Retro-compatibilità**: i nuovi campi di `AppSettings` hanno default sensati (assenti ⇒
+    legenda attiva "solo con modificatore" in basso a destra, indicatore cursore attivo). Nessun
+    cambiamento allo schema di profilo. Test di retro-compat dei settings inclusi.
+
 ## 10. Rilascio & CI/CD
 
 Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:
@@ -323,9 +344,28 @@ Prese (Onboarding — wizard + test controller):
 - **Pannello riusato:** un unico `ControllerTestView` (UserControl) serve sia il tab della finestra
   principale sia il primo passo del wizard; il polling parte/si ferma su Loaded/Unloaded.
 
+Prese (Overlay: button-legend + indicatore cursore):
+- **Derivazione della legenda nel Core, non nell'Overlay:** `ButtonLegend` è logica pura e testabile
+  (profilo + layer → righe) nel Core; l'Overlay riceve righe già pronte (`LegendRow`) e resta pura
+  presentazione, coerente con il disaccoppiamento esistente (l'Overlay non referenzia App/Core: l'App
+  fa da adattatore, come per `OverlayMode`/`ScreenCorner`→`LegendCorner`).
+- **Aggiornamento solo al cambio layer, non a ogni tick:** l'App calcola una firma economica
+  (layer + visibilità + profilo) e ricostruisce/pubblica la legenda solo quando cambia; la dedup di
+  `ModeOverlayController.UpdateLegend` fa da seconda rete anti-flicker.
+- **Una sola finestra STA per tutti gli overlay accessori:** indicatore cursore e legenda vivono sul
+  thread STA già esistente del `ModeOverlayController` (nessun thread/dispatcher in più); l'indicatore
+  cursore è guidato dallo stesso `OverlayState` (nuovo flag `CursorIndicator`) invece di un canale a
+  parte.
+- **Config nei settings globali, non nel profilo:** le opzioni UX (on/off, visibilità, angolo,
+  indicatore cursore) stanno in `AppSettings` accanto a `ShowOverlay`, non nello schema di profilo:
+  sono preferenze di presentazione, non parte del mapping. Nessun bump dello schema di profilo.
+
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.
 - Editing dei tasti di movimento (WASD) dalla GUI: per ora modificabili nel JSON.
 - Editing grafico (drag) della disposizione dei settori del radial: per ora l'ordine è quello della
   lista di voci.
 - Companion su Ascension: da verificare le regole del server privato prima di distribuirlo lì.
+- Etichette leggibili delle abilità nella button-legend: il campo (`ButtonLegendRow.AbilityLabel`) è
+  già predisposto ma oggi vuoto (la legenda mostra il keybind). Serve arricchire lo schema di profilo
+  con nomi di abilità opzionali per popolarlo.

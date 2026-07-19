@@ -145,6 +145,10 @@ bool paused = false;
 bool pausedAnnounced = false;
 int fgCounter = 0;
 
+// Firma della button-legend (layer + visibilità + profilo): la legenda si ricostruisce solo quando
+// cambia, non a ogni tick — evita allocazioni e flicker (la dedup dell'overlay fa da rete comunque).
+string lastLegendKey = "";
+
 while (true)
 {
     var snapshot = host.Poll();
@@ -198,7 +202,8 @@ while (true)
             Console.WriteLine("  [PAUSA — gioco non in primo piano; input sospesi]");
             pausedAnnounced = true;
         }
-        PushOverlay(overlay, host, paused: true, companion);
+        PushOverlay(overlay, host, paused: true, companion, settings.ShowCursorIndicator);
+        PushLegend(overlay, host, settings, paused: true, ref lastLegendKey);
         PushRadial(radialOverlay, host);
         Thread.Sleep(TickMs);
         continue;
@@ -211,7 +216,8 @@ while (true)
     }
 
     host.Update(snapshot);
-    PushOverlay(overlay, host, paused: false, companion);
+    PushOverlay(overlay, host, paused: false, companion, settings.ShowCursorIndicator);
+    PushLegend(overlay, host, settings, paused: false, ref lastLegendKey);
     PushRadial(radialOverlay, host);
 
     Thread.Sleep(TickMs);
@@ -229,7 +235,8 @@ return;
 
 // Aggiorna l'overlay (se attivo) con lo stato corrente. Il controller deduplica: nessun costo
 // se lo stato non è cambiato.
-static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool paused, CompanionState? companion)
+static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool paused, CompanionState? companion,
+    bool cursorIndicator)
 {
     if (overlay is null) return;
 
@@ -240,8 +247,49 @@ static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool pa
         MappingEngine.LayerLabel(host.Layer),
         paused,
         host.ProfileName,
-        companion?.ShortLabel ?? ""));
+        companion?.ShortLabel ?? "",
+        cursorIndicator));
 }
+
+// Aggiorna la button-legend a layer (se l'overlay è attivo). Ricostruisce le righe SOLO quando cambia
+// la firma (layer + visibilità + profilo), non a ogni tick: la logica di derivazione è pura nel Core
+// (ButtonLegend), l'overlay è pura presentazione.
+static void PushLegend(ModeOverlayController? overlay, EngineHost host, AppSettings settings, bool paused,
+    ref string lastKey)
+{
+    if (overlay is null) return;
+
+    bool cursor = host.Mode == ControllerMode.Cursor;
+    bool visible = ButtonLegend.ShouldShow(
+        settings.ShowButtonLegend, settings.LegendVisibility, host.Layer, cursor, paused);
+
+    // Firma economica: se nulla di rilevante è cambiato, non tocchiamo l'overlay.
+    string key = $"{visible}|{host.Layer}|{host.CurrentStem}";
+    if (key == lastKey) return;
+    lastKey = key;
+
+    var rows = visible
+        ? ButtonLegend.Build(host.Profile, host.Layer)
+            .Select(r => new LegendRow(r.ButtonLabel, r.Display))
+            .ToList()
+        : new List<LegendRow>();
+
+    overlay.UpdateLegend(new LegendOverlayState(
+        visible,
+        MappingEngine.LayerLabel(host.Layer),
+        MapCorner(settings.LegendCorner),
+        rows));
+}
+
+// Mappa l'enum di configurazione (Core) sull'enum di presentazione (Overlay): i due progetti sono
+// disaccoppiati, quindi l'App fa da adattatore (come per OverlayMode).
+static LegendCorner MapCorner(ScreenCorner corner) => corner switch
+{
+    ScreenCorner.TopLeft => LegendCorner.TopLeft,
+    ScreenCorner.TopRight => LegendCorner.TopRight,
+    ScreenCorner.BottomLeft => LegendCorner.BottomLeft,
+    _ => LegendCorner.BottomRight,
+};
 
 // Aggiorna l'overlay del radial menu (se attivo) con lo stato corrente. Dedup nel controller.
 static void PushRadial(RadialMenuController? radial, EngineHost host)

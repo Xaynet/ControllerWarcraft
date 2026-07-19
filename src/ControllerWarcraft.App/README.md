@@ -39,6 +39,12 @@ in un'architettura modulare.
   scarta le pressioni accidentali troppo brevi. Default 0 = comportamento storico.
 - **Macchina a stati delle modalità** — Movimento/Combattimento ↔ Cursore, con indicatore
   a console **e overlay** trasparente always-on-top ad ogni cambio di modalità/layer.
+- **Button-legend a layer (HUD)** — pannello overlay discreto che ricorda cosa fa ogni pulsante
+  **nel layer corrente** (es. `X → Shift+1`), aggiornato al cambio layer. Sempre visibile o **solo
+  mentre tieni un modificatore** LB/RB (configurabile). Le righe sono derivate da una funzione
+  **pura del Core** (`ButtonLegend`); l'App le calcola solo al cambio layer (niente flicker).
+- **Indicatore evidente della modalità cursore** — cornice colorata ai bordi + badge quando si è in
+  modalità cursore, così è impossibile non accorgersene (click-through, non copre il gioco).
 - **Auto-switch profilo** — rileva l'eseguibile in primo piano e carica il profilo associato
   (mappa in `settings.json`); opzionale: mette in pausa l'emulazione fuori dal gioco.
 - **Profilo da JSON** — i keybind, le curve di sensibilità e le deadzone arrivano dal profilo
@@ -173,8 +179,9 @@ Struttura modulare che rispecchia [ANALISI.md §5](../../ANALISI.md):
              RadialMenu        RadialMenuSettings/Item + RadialTrigger (Fase 4)
              RadialMenuResolver selezione settore pura e testabile (Fase 4)
              ClassPreset       override per classe + merge ApplyTo (Fase 4)
+             ButtonLegend      derivazione pura delle righe legenda (profilo + layer → pulsante/keybind) + visibilità
              ProfileManager    carica/salva profili e preset di classe, profilo attivo, fallback
-             AppSettings       profilo attivo + opzioni overlay/auto-switch/companion
+             AppSettings       profilo attivo + opzioni overlay/button-legend/cursore/auto-switch/companion
              Presets/BuiltInProfiles  Ascension (=Fase 1) / Classic / Retail in codice
   Companion/ CompanionState / CompanionStateReader  lettura opzionale dei SavedVariables (Fase 4)
 
@@ -190,8 +197,10 @@ Struttura modulare che rispecchia [ANALISI.md §5](../../ANALISI.md):
   Program.cs                   main loop + overlay + auto-switch + sotto-comandi
 
 (Overlay, WPF — vedi ControllerWarcraft.Overlay/README.md)
-  ModeOverlayController         host STA + Dispatcher, API thread-safe con dedup
+  ModeOverlayController         host STA + Dispatcher (modalità + cursore + legenda), API thread-safe con dedup
   OverlayWindow / OverlayState  finestra trasparente click-through + DTO di stato
+  CursorIndicatorWindow         cornice ai bordi + badge "MODALITÀ CURSORE"
+  LegendWindow / LegendOverlayState  button-legend a layer (righe pulsante → keybind) + DTO
 ```
 
 Il **MappingEngine** legge tutti i parametri (mappature, sensibilità, curva, deadzone, soglie) dal

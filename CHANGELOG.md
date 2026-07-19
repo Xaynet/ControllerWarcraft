@@ -8,6 +8,21 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Added
+- **Button-legend a layer (HUD)**: pannello overlay discreto, semi-trasparente e click-through che
+  mostra cosa fa **ogni pulsante mappabile nel layer corrente** (es. `X → Shift+1`, `RT → Ctrl+4`),
+  aggiornandosi quando si tiene premuto LB/RB (Base → +LB → +RB → +LB+RB). Aiuta a ricordare le
+  abilità dei 4 layer *in gioco*. La logica di derivazione è **pura nel Core** (`ButtonLegend.Build`,
+  profilo + layer → righe); l'overlay è pura presentazione. Configurabile (`settings.json` + GUI):
+  on/off (`showButtonLegend`, default on), modalità di visibilità (`legendVisibility`:
+  `AlwaysVisible` / `WhileModifierHeld`, default **solo mentre tieni un modificatore**) e angolo dello
+  schermo (`legendCorner`, default in basso a destra).
+- **Indicatore evidente della modalità cursore**: quando si è in modalità cursore l'overlay mostra una
+  sottile **cornice colorata ai bordi dello schermo** + un **badge** ("MODALITÀ CURSORE"), così è
+  impossibile non accorgersene (attrito segnalato da un tester). Click-through: non copre il gioco né
+  intercetta il mouse. Configurabile (`showCursorIndicator`, default on).
+- Test: logica pura della button-legend (`ButtonLegend.Build` su tutti i pulsanti/layer e i pulsanti
+  non mappati, etichette, e `ButtonLegend.ShouldShow`) e retro-compatibilità dei nuovi campi di
+  `AppSettings` (un `settings.json` senza i campi legenda/indicatore usa i default documentati).
 - **Wizard di primo avvio** nella GUI (`cwgui.exe`): mostrato automaticamente al primo lancio
   (quando manca `settings.json` o il flag `setupCompleted` è `false`) e riapribile dal pulsante
   *Wizard di primo avvio*. Passi: benvenuto + test del controller → scelta versione

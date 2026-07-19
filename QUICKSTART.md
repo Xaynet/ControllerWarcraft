@@ -90,8 +90,16 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 1. Avvia `cwapp.exe` e **accetta il prompt UAC** (serve per inviare input al gioco,
    che gira da amministratore).
 2. Avvia WoW ed entra in gioco.
-3. L'**overlay** trasparente mostra modalità e layer correnti.
+3. L'**overlay** trasparente mostra modalità e layer correnti. Due aiuti visivi in più:
+   - **Button-legend**: un pannello discreto (per default in basso a destra) ricorda cosa fa ogni
+     pulsante **nel layer corrente**; per default compare **solo mentre tieni premuto** LB/RB
+     (Base → +LB → +RB → +LB+RB), così ti ricorda al volo cosa c'è su quel layer.
+   - **Indicatore modalità cursore**: quando sei in cursore, una **cornice colorata ai bordi** e un
+     **badge** rendono impossibile non accorgertene.
 4. Premi **BACK** per fermare l'app.
+
+> Puoi regolare questi aiuti da `cwgui.exe` (o in `settings.json`): mostrare la button-legend sempre
+> o solo con un modificatore, sceglierne l'angolo, e attivare/disattivare l'indicatore cursore.
 
 ## Comandi (preset default)
 

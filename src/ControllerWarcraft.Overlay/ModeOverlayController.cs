@@ -16,10 +16,16 @@ public sealed class ModeOverlayController : IDisposable
     private Thread? _thread;
     private Dispatcher? _dispatcher;
     private OverlayWindow? _window;
+    private CursorIndicatorWindow? _cursorWindow;
+    private LegendWindow? _legendWindow;
     private readonly ManualResetEventSlim _ready = new(false);
 
     private OverlayState _last;
     private bool _hasLast;
+
+    private LegendOverlayState _lastLegend;
+    private bool _hasLastLegend;
+
     private volatile bool _disposed;
 
     /// <summary>True se l'overlay è stato avviato correttamente.</summary>
@@ -48,6 +54,10 @@ public sealed class ModeOverlayController : IDisposable
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
             _window = new OverlayWindow();
+            // Le finestre accessorie (indicatore cursore, button-legend) vivono sullo stesso thread
+            // STA: create nascoste, si mostrano solo quando lo stato lo richiede.
+            _cursorWindow = new CursorIndicatorWindow();
+            _legendWindow = new LegendWindow();
             _window.Show();
             _ready.Set();
             Dispatcher.Run();
@@ -74,7 +84,33 @@ public sealed class ModeOverlayController : IDisposable
 
         try
         {
-            _dispatcher.BeginInvoke(() => _window?.ApplyState(state));
+            _dispatcher.BeginInvoke(() =>
+            {
+                _window?.ApplyState(state);
+                // L'indicatore evidente della modalità cursore è guidato dallo stesso stato
+                // (modalità/pausa) più il flag di configurazione dentro OverlayState.
+                _cursorWindow?.ApplyState(state);
+            });
+        }
+        catch { /* dispatcher in shutdown: ignora */ }
+    }
+
+    /// <summary>
+    /// Aggiorna la button-legend a layer col nuovo stato. Come <see cref="Update"/> deduplica: l'App
+    /// dovrebbe chiamarlo solo quando cambia il layer/modalità, ma anche una chiamata ad ogni tick è
+    /// sicura (nessun ridisegno se lo stato è invariato → nessun flicker).
+    /// </summary>
+    public void UpdateLegend(LegendOverlayState state)
+    {
+        if (_dispatcher is null || _disposed) return;
+        if (_hasLastLegend && _lastLegend.Equals(state)) return;
+
+        _lastLegend = state;
+        _hasLastLegend = true;
+
+        try
+        {
+            _dispatcher.BeginInvoke(() => _legendWindow?.ApplyState(state));
         }
         catch { /* dispatcher in shutdown: ignora */ }
     }

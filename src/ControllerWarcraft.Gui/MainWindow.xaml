@@ -51,6 +51,16 @@
                 <x:Type TypeName="prof:CursorActivationMode" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider x:Key="LegendVisibilityValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:LegendVisibilityMode" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="ScreenCornerValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:ScreenCorner" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
 
         <Style TargetType="TextBlock" x:Key="Label">
             <Setter Property="Margin" Value="0,6,8,2" />
@@ -277,6 +287,29 @@
                                     <StackPanel>
                                         <CheckBox Content="Mostra overlay indicatore di modalità"
                                                   IsChecked="{Binding ShowOverlay}" Margin="0,2" />
+
+                                        <CheckBox Content="Mostra button-legend a layer (HUD dei pulsanti)"
+                                                  IsChecked="{Binding ShowButtonLegend}" Margin="0,2" />
+                                        <TextBlock Text="Pannello discreto che ricorda cosa fa ogni pulsante nel layer corrente."
+                                                   Foreground="#777" TextWrapping="Wrap" Margin="0,0,0,4" FontSize="11" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                            <TextBlock Text="Visibilità legenda" Style="{StaticResource Label}"
+                                                       VerticalAlignment="Center" MinWidth="130" />
+                                            <ComboBox Width="180"
+                                                      ItemsSource="{Binding Source={StaticResource LegendVisibilityValues}}"
+                                                      SelectedItem="{Binding LegendVisibility}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <TextBlock Text="Angolo legenda" Style="{StaticResource Label}"
+                                                       VerticalAlignment="Center" MinWidth="130" />
+                                            <ComboBox Width="180"
+                                                      ItemsSource="{Binding Source={StaticResource ScreenCornerValues}}"
+                                                      SelectedItem="{Binding LegendCorner}" />
+                                        </StackPanel>
+
+                                        <CheckBox Content="Indicatore evidente della modalità cursore (cornice + badge)"
+                                                  IsChecked="{Binding ShowCursorIndicator}" Margin="0,2" />
+
                                         <CheckBox Content="Auto-switch profilo (finestra in primo piano)"
                                                   IsChecked="{Binding AutoSwitchEnabled}" Margin="0,2" />
                                         <CheckBox Content="Pausa quando il gioco non è in primo piano"
