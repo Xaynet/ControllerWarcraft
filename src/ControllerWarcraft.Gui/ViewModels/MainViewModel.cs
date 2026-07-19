@@ -81,6 +81,27 @@ public sealed class MainViewModel : ObservableObject
     public MouselookSettings Mouselook => _current.Mouselook;
     public ResponseCurve MouselookCurve => _current.Mouselook.Curve;
     public CursorSettings Cursor => _current.Cursor;
+    public InputHardeningSettings InputHardening => _current.InputHardening;
+
+    // Attivazione modalità cursore (hardening input): pulsante + Toggle/Hold/None.
+    public CursorActivationButton CursorActivationButton
+    {
+        get => _current.Cursor.ActivationButton;
+        set { _current.Cursor.ActivationButton = value; OnPropertyChanged(); }
+    }
+
+    public CursorActivationMode CursorActivationMode
+    {
+        get => _current.Cursor.ActivationMode;
+        set { _current.Cursor.ActivationMode = value; OnPropertyChanged(); }
+    }
+
+    // Hardening: hold minimo (ms) per i click-stick / Start contro le pressioni accidentali.
+    public int ThumbClickMinHoldMs
+    {
+        get => _current.InputHardening.ThumbClickMinHoldMs;
+        set { _current.InputHardening.ThumbClickMinHoldMs = value; OnPropertyChanged(); }
+    }
 
     // Binding di sistema editabili (Fase 3).
     public KeybindEditorViewModel? JumpBind { get => _jumpBind; private set => SetField(ref _jumpBind, value); }
@@ -222,6 +243,10 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(Mouselook));
         OnPropertyChanged(nameof(MouselookCurve));
         OnPropertyChanged(nameof(Cursor));
+        OnPropertyChanged(nameof(InputHardening));
+        OnPropertyChanged(nameof(CursorActivationButton));
+        OnPropertyChanged(nameof(CursorActivationMode));
+        OnPropertyChanged(nameof(ThumbClickMinHoldMs));
         OnPropertyChanged(nameof(ProfileName));
         OnPropertyChanged(nameof(GameVersion));
         OnPropertyChanged(nameof(Description));

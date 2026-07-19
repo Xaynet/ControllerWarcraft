@@ -12,8 +12,11 @@ ed è costruita sullo stack consigliato in [§6](../../ANALISI.md) (C#/.NET + WP
 - **Selezione profilo** — menu a tendina con tutti i profili (preset + utente). Mostra qual è il
   profilo attivo (da `settings.json`).
 - **Editing impostazioni** — mouselook (sensibilità X/Y, inversione, deadzone e **curva di
-  risposta** Linear/Power/Exponential), cursore (velocità, inversione), movimento (soglia,
-  deadzone), con slider + campo numerico.
+  risposta** Linear/Power/Exponential), cursore (velocità, inversione, **pulsante e modalità di
+  attivazione**), movimento (soglia, deadzone), con slider + campo numerico.
+- **Attivazione modalità cursore & hardening input** — nel pannello *Cursore* scegli il **pulsante**
+  (R3/L3/Start/None) e la **modalità** (Toggle/Hold); nel pannello *Hardening input* imposti l'**hold
+  minimo** (ms) che scarta le pressioni accidentali di L3/R3. Default = comportamento storico.
 - **Editing mappature** — tabella `(pulsante × layer) → keybind` completamente editabile, con i
   **4 layer** (Base/+LB/+RB/+LB+RB); aggiungi/rimuovi righe, cambia tasto e modificatori.
 - **Editing binding di sistema** (Fase 3) — Salto / Tab-target / Annulla ora modificabili.

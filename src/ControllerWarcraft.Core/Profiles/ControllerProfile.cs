@@ -18,8 +18,13 @@ public sealed class ControllerProfile
     /// <summary>Versione dello schema del file (SemVer-ish). Serve alla migrazione futura.
     /// v1.1 (Fase 3): aggiunta <see cref="MouselookSettings.Curve"/> e il layer <c>Shoulder_LBRB</c>.
     /// v1.2 (Fase 4): aggiunto <see cref="RadialMenu"/> (radial menu overlay).
-    /// I file v1.0/v1.1 restano leggibili: i campi nuovi hanno default retro-compatibili.</summary>
-    public string SchemaVersion { get; set; } = "1.2";
+    /// v1.3 (Hardening input): attivazione cursore configurabile
+    /// (<see cref="CursorSettings.ActivationButton"/> / <see cref="CursorSettings.ActivationMode"/>)
+    /// e soglia di hold minimo (<see cref="InputHardening"/>) contro le pressioni accidentali di L3/R3.
+    /// I file v1.0/v1.1/v1.2 restano leggibili: i campi nuovi hanno default retro-compatibili
+    /// (cursore su R3 in Toggle, hold minimo 0) che riproducono <b>esattamente</b> il comportamento
+    /// precedente.</summary>
+    public string SchemaVersion { get; set; } = "1.3";
 
     /// <summary>Nome leggibile del profilo (mostrato nella GUI e nella selezione).</summary>
     public string Name { get; set; } = "";
@@ -51,6 +56,12 @@ public sealed class ControllerProfile
     /// default: un profilo senza questo campo si comporta esattamente come nelle fasi precedenti.
     /// </summary>
     public RadialMenuSettings RadialMenu { get; set; } = new();
+
+    /// <summary>
+    /// Hardening input (mitigazione delle pressioni accidentali dei click-stick L3/R3). Default
+    /// neutro (hold minimo 0): un profilo senza questo campo si comporta esattamente come prima.
+    /// </summary>
+    public InputHardeningSettings InputHardening { get; set; } = new();
 
     // Indice di lookup costruito a partire dalla lista (non serializzato). Popolato pigramente.
     [JsonIgnore]
@@ -126,17 +137,107 @@ public sealed class MouselookSettings : ObservableModel
     public ResponseCurve Curve { get => _curve; set => SetField(ref _curve, value ?? new ResponseCurve()); }
 }
 
+/// <summary>
+/// Come viene attivata/disattivata la modalità cursore (hardening input).
+/// </summary>
+public enum CursorActivationMode
+{
+    /// <summary>
+    /// Toggle (default, comportamento storico): una pressione entra in modalità cursore, la
+    /// pressione successiva torna a Movimento/Combattimento.
+    /// </summary>
+    Toggle,
+
+    /// <summary>
+    /// Hold (momentaneo): la modalità cursore è attiva <b>solo mentre</b> il pulsante è tenuto
+    /// premuto; al rilascio si torna automaticamente a Movimento/Combattimento. Elimina i cambi
+    /// di modalità dimenticati.
+    /// </summary>
+    Hold,
+}
+
+/// <summary>
+/// Pulsante fisico che attiva la modalità cursore (hardening input). <see cref="None"/> disattiva
+/// del tutto la modalità cursore. Sono ammessi solo pulsanti "modali" che non rubano uno slot
+/// azione: i due click-stick e Start.
+///
+/// Retro-compatibilità: il default è <see cref="RightThumb"/> (R3), quindi un profilo senza questo
+/// campo mantiene esattamente l'attivazione storica su R3.
+/// </summary>
+public enum CursorActivationButton
+{
+    /// <summary>Modalità cursore disattivata: nessun pulsante la attiva.</summary>
+    None,
+
+    /// <summary>R3 (click stick destro) — default storico.</summary>
+    RightThumb,
+
+    /// <summary>L3 (click stick sinistro). Nota: se scelto, L3 non fa più Tab-target.</summary>
+    LeftThumb,
+
+    /// <summary>Start. Pulsante non-stick, difficile da premere per sbaglio: ottimo con la modalità Hold.</summary>
+    Start,
+}
+
 /// <summary>Impostazioni della modalita' cursore (stick destro → cursore virtuale).</summary>
 public sealed class CursorSettings : ObservableModel
 {
     private double _speed = 16.0;
     private bool _invertY = false;
+    private CursorActivationButton _activationButton = CursorActivationButton.RightThumb;
+    private CursorActivationMode _activationMode = CursorActivationMode.Toggle;
 
     /// <summary>Pixel di spostamento cursore per tick a stick pieno.</summary>
     public double Speed { get => _speed; set => SetField(ref _speed, value); }
 
     /// <summary>Inverte l'asse verticale del cursore (raro; di norma false).</summary>
     public bool InvertY { get => _invertY; set => SetField(ref _invertY, value); }
+
+    /// <summary>
+    /// Pulsante che attiva la modalità cursore. Default <see cref="CursorActivationButton.RightThumb"/>
+    /// (R3, comportamento storico). <see cref="CursorActivationButton.None"/> disattiva la modalità.
+    /// </summary>
+    public CursorActivationButton ActivationButton
+    {
+        get => _activationButton;
+        set => SetField(ref _activationButton, value);
+    }
+
+    /// <summary>
+    /// Modalità di attivazione: <see cref="CursorActivationMode.Toggle"/> (default, storico) oppure
+    /// <see cref="CursorActivationMode.Hold"/> (momentaneo).
+    /// </summary>
+    public CursorActivationMode ActivationMode
+    {
+        get => _activationMode;
+        set => SetField(ref _activationMode, value);
+    }
+}
+
+/// <summary>
+/// Impostazioni di hardening input (hardening input): mitigano le pressioni <b>accidentali</b> dei
+/// click-stick L3/R3, facilissimi da premere per sbaglio inclinando la levetta.
+///
+/// Retro-compatibile: default a 0 = nessuna soglia, comportamento identico alle fasi precedenti.
+/// Un valore piccolo e sensato (~60-120 ms) scarta i micro-tocchi involontari senza aggiungere una
+/// latenza percepibile alle pressioni intenzionali.
+/// </summary>
+public sealed class InputHardeningSettings : ObservableModel
+{
+    private int _thumbClickMinHoldMs = 0;
+
+    /// <summary>
+    /// Durata minima (ms) per cui un click-stick (L3/R3) — e il pulsante Start quando usato come
+    /// trigger cursore — deve restare premuto perché la pressione conti. Sotto questa soglia la
+    /// pressione è ignorata (troppo breve = probabile incidente). Si applica a: toggle/hold cursore,
+    /// Tab-target e apertura del radial menu. Default <c>0</c> = disattivata (retro-compatibile).
+    /// Valori negativi sono trattati come 0.
+    /// </summary>
+    public int ThumbClickMinHoldMs
+    {
+        get => _thumbClickMinHoldMs;
+        set => SetField(ref _thumbClickMinHoldMs, value < 0 ? 0 : value);
+    }
 }
 
 /// <summary>Binding "di sistema" usati direttamente dal MappingEngine, fuori dalla tabella layer.</summary>

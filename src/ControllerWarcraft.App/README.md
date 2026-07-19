@@ -31,8 +31,12 @@ in un'architettura modulare.
   (Base, +LB, +RB, **+LB+RB**), mappati agli slot dell'action bar (1-9, Shift+1-9, Ctrl+1-9,
   Shift+Ctrl+1-9). Priorità: LB+RB > LB > RB > Base.
 - **Tab-target** — su L3 (click stick sinistro).
-- **Modalità cursore** — toggle su R3: lo stick destro diventa cursore mouse virtuale,
-  A = click sinistro, X = click destro, B = Escape. Per loot/vendor/talenti.
+- **Modalità cursore** — attivazione **configurabile** (default: toggle su R3, come da storico).
+  Pulsante rimappabile (R3 / L3 / Start / *None* per disattivarla) e modalità **Toggle** o **Hold**
+  (momentaneo, attivo solo mentre tieni premuto). In modalità cursore: stick destro = cursore mouse
+  virtuale, A = click sinistro, X = click destro, B = Escape. Per loot/vendor/talenti.
+- **Hardening input** — soglia opzionale di *hold minimo* (ms) sui click-stick L3/R3 (e Start):
+  scarta le pressioni accidentali troppo brevi. Default 0 = comportamento storico.
 - **Macchina a stati delle modalità** — Movimento/Combattimento ↔ Cursore, con indicatore
   a console **e overlay** trasparente always-on-top ad ogni cambio di modalità/layer.
 - **Auto-switch profilo** — rileva l'eseguibile in primo piano e carica il profilo associato
@@ -83,12 +87,29 @@ Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profile
 | D-pad Destra | Abilità (7 / …) | — |
 | D-pad Giù | Abilità (8 / …) | — |
 | D-pad Sinistra | Abilità (9 / …) | — |
-| **L3** (click stick sx) | Tab-target *(o trigger radial, se configurato)* | — |
-| **R3** (click stick dx) | Toggle → Cursore *(o trigger radial, se configurato)* | Toggle → Movimento |
+| **L3** (click stick sx) | Tab-target *(o trigger radial / attivazione cursore, se configurato)* | — |
+| **R3** (click stick dx) | Attiva Cursore *(pulsante e modalità configurabili — o trigger radial)* | Torna a Movimento |
 | Back | Uscita pulita | Uscita pulita |
 
 > Il layer si sceglie **tenendo premuto** LB e/o RB mentre si preme il pulsante abilità.
 > Priorità: **LB+RB > LB > RB > Base**.
+
+### Hardening input (attivazione cursore & pressioni accidentali)
+
+L'attivazione della modalità cursore è configurabile nel profilo (`cursor.activationButton` +
+`cursor.activationMode`) e dalla GUI:
+
+- **Pulsante** (`activationButton`): `RightThumb` (R3, default), `LeftThumb` (L3), `Start`, o
+  `None` (modalità cursore disattivata). Se è `LeftThumb`, L3 non fa più Tab-target.
+- **Modalità** (`activationMode`): `Toggle` (default storico) o `Hold` (cursore attivo solo mentre
+  tieni premuto il pulsante).
+- **Hold minimo** (`inputHardening.thumbClickMinHoldMs`, ms): un click-stick più breve della soglia
+  è ignorato (scarta le pressioni accidentali). Default 0 = comportamento storico. Si applica a
+  toggle/hold cursore, Tab-target e apertura del radial.
+
+**Precedenza:** se un pulsante è sia il trigger del radial sia l'attivazione cursore, vince il
+radial. La logica di debounce vive nel Core (`HoldGate`, pura e testabile); il `MappingEngine`
+legge tutto dal profilo. Retro-compatibile: i profili senza questi campi si comportano come prima.
 
 ### Radial menu (Fase 4)
 

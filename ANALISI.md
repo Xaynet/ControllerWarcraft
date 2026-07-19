@@ -174,6 +174,20 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   l'App lo legge solo se abilitato e lo usa **solo come contesto** (mai per guidare input). Schema
   profilo a `v1.2`, retro-compatibile con i file `v1.0`/`v1.1`.
 
+- **Hardening input (post-Fase 4):** ✅ *Fatto.* Attrito segnalato da un tester: la modalità
+  cursore era un toggle **fisso su R3**, non configurabile né disattivabile, e L3/R3 sono facili da
+  premere per sbaglio inclinando la levetta. Introdotti: (a) **attivazione cursore configurabile**
+  — pulsante rimappabile (`cursor.activationButton`: `None`/`RightThumb`/`LeftThumb`/`Start`) e
+  modalità `Toggle` (default storico) o `Hold` (momentaneo), con `None` che disattiva la modalità;
+  (b) **soglia di hold minimo** (`inputHardening.thumbClickMinHoldMs`) che scarta i click-stick
+  troppo brevi/accidentali. Logica riusabile nel Core (`HoldGate`, puro e testabile — il tempo è
+  iniettato dall'esterno); il `MappingEngine` legge tutto dal profilo. Schema a **v1.3**,
+  retro-compatibile: i default riproducono esattamente il comportamento precedente (cursore su R3
+  in Toggle, hold 0). **Precedenza** (documentata): radial menu > attivazione cursore > funzione
+  storica del pulsante; l'hold minimo si applica a toggle/hold cursore, Tab-target e apertura del
+  radial. Rigorosamente 1:1: si rimappa *quando* e *come* si legge l'input, mai *cosa* viene
+  eseguito — nessuna automazione.
+
 ## 10. Rilascio & CI/CD
 
 Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:
@@ -247,6 +261,19 @@ Prese (Fase 4):
 - **Tasti funzione:** aggiunti `F1`-`F12` a `ScanCode` (naturali per le utility del radial), solo nomi
   nuovi ⇒ retro-compatibile.
 - **Packaging:** la release include ora `profiles/classes/` e la cartella `addon/` nello zip (vedi §10).
+
+Prese (Hardening input):
+- **Attivazione cursore nel profilo:** i campi vivono in `CursorSettings` (`ActivationButton`,
+  `ActivationMode`), coerenti con la scelta storica di tenere le impostazioni del cursore lì.
+  Pulsanti ammessi solo "modali" (L3/R3/Start): non rubano uno slot azione. `None` = disattiva.
+- **Debounce nel Core, non nell'App:** `HoldGate` è una struct pura (nessun orologio interno: il
+  `dtMs` è passato dall'engine), così la logica di hold minimo è deterministica e testabile. Il
+  `MappingEngine` misura il tempo con `Environment.TickCount64` in un overload di `Update`, ma
+  espone anche `Update(snapshot, dtMs)` per i test.
+- **Soglia condivisa:** un unico `thumbClickMinHoldMs` per tutti i trigger modali (L3/R3/Start),
+  invece di soglie separate — più semplice da spiegare e tarare. Default 0 = nessun cambiamento.
+- **Precedenza esplicita:** radial > cursore > funzione storica del pulsante, per evitare che due
+  funzioni sullo stesso click-stick si attivino insieme.
 
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.

@@ -1,5 +1,6 @@
 using ControllerWarcraft.App.Input;
 using ControllerWarcraft.App.Output;
+using ControllerWarcraft.Core.Input;
 using ControllerWarcraft.Core.Profiles;
 
 namespace ControllerWarcraft.App.Engine;
@@ -21,6 +22,17 @@ public sealed class MappingEngine
 
     // Snapshot precedente, per l'edge-detection (reagire alla pressione, non a ogni tick).
     private GamepadSnapshot _prev = GamepadSnapshot.Disconnected;
+
+    // ---- Hardening input: gate con "hold minimo" per i click-stick e Start ----
+    // Debounce le pressioni accidentali/troppo brevi di L3/R3 (e Start quando usato come trigger
+    // cursore). Con soglia 0 (default) coincidono col classico fronte di pressione.
+    private HoldGate _l3;
+    private HoldGate _r3;
+    private HoldGate _startGate;
+
+    // Timing per il gate: ms trascorsi tra un tick e l'altro (l'overload senza dt li misura).
+    private long _lastTickMs;
+    private bool _hasLastTick;
 
     // ---- Parametri letti dal profilo (Fase 2: configurabili via JSON/GUI) ----
     private double LookSensX => _profile.Mouselook.SensitivityX;
@@ -65,14 +77,38 @@ public sealed class MappingEngine
         _radialLabels = _radial.Items.Select(i => string.IsNullOrWhiteSpace(i.Label) ? i.Bind.ToString() : i.Label).ToArray();
     }
 
-    /// <summary>Elabora un tick. Va chiamato SOLO con uno snapshot connesso.</summary>
+    /// <summary>
+    /// Elabora un tick misurando da solo il tempo trascorso (per il gate di hold minimo).
+    /// Va chiamato SOLO con uno snapshot connesso.
+    /// </summary>
     public void Update(in GamepadSnapshot s)
     {
+        long now = Environment.TickCount64;
+        double dt = _hasLastTick ? (now - _lastTickMs) : 0.0;
+        _hasLastTick = true;
+        _lastTickMs = now;
+        Update(s, dt);
+    }
+
+    /// <summary>
+    /// Elabora un tick con il delta-tempo esplicito <paramref name="dtMs"/> (ms dal tick precedente),
+    /// usato dai gate di hold minimo. Overload deterministico e testabile.
+    /// </summary>
+    public void Update(in GamepadSnapshot s, double dtMs)
+    {
+        // Hardening input: aggiorna i gate dei pulsanti "modali" (click-stick + Start) con la soglia
+        // di hold minimo del profilo. Va fatto ogni tick perché il tempo di pressione si accumula.
+        double minHold = _profile.InputHardening?.ThumbClickMinHoldMs ?? 0;
+        _l3.Update(s.LeftThumbClick, dtMs, minHold);
+        _r3.Update(s.RightThumbClick, dtMs, minHold);
+        _startGate.Update(s.Start, dtMs, minHold);
+
         // 0) Movimento: stick sinistro -> WASD. Attivo sempre (anche col radial aperto).
         UpdateMovement(s);
 
         // 1) Radial menu (Fase 4): se configurato, è modale e consuma stick destro + trigger.
         //    Mentre è aperto sospende mouselook/cursore/abilità; al rilascio invia UN SOLO keybind.
+        //    L'apertura rispetta l'hold minimo: un tocco troppo breve non fa comparire il menu.
         if (_radial.IsUsable)
         {
             bool wasOpen = _radialOpen;
@@ -85,9 +121,10 @@ public sealed class MappingEngine
             }
         }
 
-        // 2) Toggle modalita' su R3 (edge) — salvo che R3 sia il trigger del radial.
-        if (!TriggerIs(RadialTrigger.RightThumb) && Pressed(s.RightThumbClick, _prev.RightThumbClick))
-            ToggleMode();
+        // 2) Attivazione della modalità cursore (configurabile: pulsante + Toggle/Hold/None).
+        //    Precedenza: se il pulsante scelto è anche il trigger del radial, vince il radial
+        //    (già gestito sopra) e qui l'attivazione viene saltata.
+        UpdateCursorActivation();
 
         // 3) Logica specifica della modalita'.
         if (Mode == ControllerMode.MovementCombat)
@@ -98,20 +135,70 @@ public sealed class MappingEngine
         _prev = s;
     }
 
+    // ------------------------------------------------------ attivazione modalità cursore
+    // Riferimenti ai gate (già aggiornati questo tick) per pulsante cursore.
+    private bool CursorGatePressedEdge() => _profile.Cursor.ActivationButton switch
+    {
+        CursorActivationButton.RightThumb => _r3.PressedEdge,
+        CursorActivationButton.LeftThumb => _l3.PressedEdge,
+        CursorActivationButton.Start => _startGate.PressedEdge,
+        _ => false,
+    };
+
+    private bool CursorGateHeld() => _profile.Cursor.ActivationButton switch
+    {
+        CursorActivationButton.RightThumb => _r3.Held,
+        CursorActivationButton.LeftThumb => _l3.Held,
+        CursorActivationButton.Start => _startGate.Held,
+        _ => false,
+    };
+
+    // True se il pulsante di attivazione cursore coincide col trigger del radial: in tal caso il
+    // radial ha la precedenza e l'attivazione cursore su quel pulsante è ignorata.
+    private bool CursorButtonTakenByRadial()
+    {
+        if (!_radial.IsUsable) return false;
+        return (_profile.Cursor.ActivationButton, _radial.Trigger) switch
+        {
+            (CursorActivationButton.RightThumb, RadialTrigger.RightThumb) => true,
+            (CursorActivationButton.LeftThumb, RadialTrigger.LeftThumb) => true,
+            _ => false,
+        };
+    }
+
+    private void UpdateCursorActivation()
+    {
+        var button = _profile.Cursor.ActivationButton;
+        if (button == CursorActivationButton.None) return; // modalità cursore disattivata
+        if (CursorButtonTakenByRadial()) return;           // precedenza al radial
+
+        if (_profile.Cursor.ActivationMode == CursorActivationMode.Hold)
+        {
+            // Momentaneo: cursore attivo solo mentre il pulsante (qualificato) è tenuto premuto.
+            SetMode(CursorGateHeld() ? ControllerMode.Cursor : ControllerMode.MovementCombat);
+        }
+        else
+        {
+            // Toggle (storico): ogni pressione qualificata inverte la modalità.
+            if (CursorGatePressedEdge()) ToggleMode();
+        }
+    }
+
     // ---------------------------------------------------------------- radial menu
     // True se il radial è attivo e usa quel pulsante come trigger.
     private bool TriggerIs(RadialTrigger t) => _radial.IsUsable && _radial.Trigger == t;
 
-    private bool TriggerHeld(in GamepadSnapshot s) => _radial.Trigger switch
+    // Trigger tenuto premuto secondo il gate (rispetta l'hold minimo).
+    private bool TriggerHeld() => _radial.Trigger switch
     {
-        RadialTrigger.LeftThumb => s.LeftThumbClick,
-        RadialTrigger.RightThumb => s.RightThumbClick,
+        RadialTrigger.LeftThumb => _l3.Held,
+        RadialTrigger.RightThumb => _r3.Held,
         _ => false,
     };
 
     private void UpdateRadial(in GamepadSnapshot s)
     {
-        bool held = TriggerHeld(s);
+        bool held = TriggerHeld();
 
         if (held && !_radialOpen)
         {
@@ -187,8 +274,11 @@ public sealed class MappingEngine
         // A = Salto (tap su edge).
         if (Pressed(s.A, _prev.A)) _out.TapKeybind(_profile.System.Jump);
 
-        // L3 = Tab-target (tap su edge) — salvo che L3 sia il trigger del radial.
-        if (!TriggerIs(RadialTrigger.LeftThumb) && Pressed(s.LeftThumbClick, _prev.LeftThumbClick))
+        // L3 = Tab-target (tap su edge, con hold minimo) — salvo che L3 sia consumato dal radial
+        // o usato come pulsante di attivazione cursore (in tal caso L3 non fa più Tab-target).
+        bool l3Taken = TriggerIs(RadialTrigger.LeftThumb)
+                     || (_profile.Cursor.ActivationButton == CursorActivationButton.LeftThumb);
+        if (!l3Taken && _l3.PressedEdge)
             _out.TapKeybind(_profile.System.TabTarget);
 
         // Abilita' dei pulsanti frontali/D-pad/grilletti, secondo il layer corrente.
@@ -247,16 +337,19 @@ public sealed class MappingEngine
     }
 
     // ---------------------------------------------------------------- macchina a stati
-    private void ToggleMode()
+    private void ToggleMode() => SetMode(
+        Mode == ControllerMode.MovementCombat ? ControllerMode.Cursor : ControllerMode.MovementCombat);
+
+    /// <summary>Passa alla modalità <paramref name="target"/> (no-op se già attiva) con pulizia del mouse.</summary>
+    private void SetMode(ControllerMode target)
     {
+        if (Mode == target) return;
+
         // Pulisce lo stato del mouse legato alla modalita' uscente (il WASD si auto-corregge ogni tick).
         _out.SetRightMouseHeld(false);
         _out.SetLeftMouseHeld(false);
 
-        Mode = Mode == ControllerMode.MovementCombat
-            ? ControllerMode.Cursor
-            : ControllerMode.MovementCombat;
-
+        Mode = target;
         OnStatus?.Invoke($"Modalita': {ModeLabel(Mode)}");
     }
 
@@ -266,6 +359,12 @@ public sealed class MappingEngine
         _out.ReleaseAll();
         _prev = GamepadSnapshot.Disconnected;
         Layer = AbilityLayer.Base;
+
+        // Azzera i gate e il timing dell'hold minimo: dopo un reset una pressione riparte da zero.
+        _l3.Reset();
+        _r3.Reset();
+        _startGate.Reset();
+        _hasLastTick = false;
 
         if (_radialOpen)
         {

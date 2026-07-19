@@ -60,8 +60,14 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
 - **CLI (solo per questa esecuzione)** — `cwapp --profile classic`.
 - **Elenco** — `cwapp --list`.
 
-## Schema del profilo (v1.2)
+## Schema del profilo (v1.3)
 
+> **v1.3 (Hardening input):** aggiunti `cursor.activationButton` / `cursor.activationMode`
+> (attivazione modalità cursore configurabile e disattivabile) e `inputHardening.thumbClickMinHoldMs`
+> (soglia di hold minimo contro le pressioni accidentali di L3/R3). I file **v1.0/v1.1/v1.2** restano
+> validi: i default riproducono **esattamente** il comportamento storico (cursore su R3 in `Toggle`,
+> hold minimo `0`).
+>
 > **v1.2 (Fase 4):** aggiunto `radialMenu` (radial menu overlay). I file **v1.0/v1.1** restano
 > validi: se il campo manca, il radial è semplicemente disattivato (default `enabled:false`,
 > `trigger:"None"`), quindi il comportamento è identico a prima.
@@ -73,7 +79,7 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
 
 ```jsonc
 {
-  "schemaVersion": "1.1",          // versione dello schema, per migrazioni future
+  "schemaVersion": "1.3",          // versione dello schema, per migrazioni future
   "name": "Ascension",             // nome leggibile (mostrato nella GUI)
   "gameVersion": "Ascension",      // Ascension | Classic | Retail (informativo)
   "description": "…",              // note/assunzioni
@@ -95,7 +101,9 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
   },
   "cursor": {                      // modalità cursore (stick destro → cursore virtuale)
     "speed": 16,                   // pixel/tick a stick pieno
-    "invertY": false
+    "invertY": false,
+    "activationButton": "RightThumb", // None | RightThumb (R3) | LeftThumb (L3) | Start — None disattiva
+    "activationMode": "Toggle"     // Toggle (default storico) | Hold (attivo solo mentre premuto)
   },
   "system": {                      // binding gestiti direttamente dall'engine
     "jump":        { "key": "Space",  "shift": false, "ctrl": false, "alt": false },
@@ -119,6 +127,10 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
       { "label": "Cavalcatura", "bind": { "key": "F1", "shift": false, "ctrl": false, "alt": false } }
       // …
     ]
+  },
+
+  "inputHardening": {              // hardening input (v1.3). Default neutro = comportamento storico.
+    "thumbClickMinHoldMs": 0       // hold minimo (ms) per L3/R3/Start: click più brevi = ignorati. 0 = off
   }
 }
 ```
@@ -127,8 +139,8 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
 
 - `button` (pulsante fisico mappabile): `X`, `B`, `Y`, `RightTrigger`, `LeftTrigger`,
   `DPadUp`, `DPadRight`, `DPadDown`, `DPadLeft`.
-  (I pulsanti "di sistema" A=salto, LB/RB=modificatori, L3=tab-target, R3=toggle, Back=uscita
-  sono gestiti dall'engine e non compaiono in `abilities`.)
+  (I pulsanti "di sistema" A=salto, LB/RB=modificatori, L3=tab-target, R3=attivazione cursore,
+  Back=uscita sono gestiti dall'engine e non compaiono in `abilities`.)
 - `layer` (stato modificatori): `Base`, `Shoulder_LB` (LB tenuto), `Shoulder_RB` (RB tenuto),
   `Shoulder_LBRB` (LB+RB tenuti insieme — 4° layer, Fase 3). Priorità: LB+RB > LB > RB > Base.
 - `key` (scancode di tastiera, per **nome**): `D1`..`D0`, `A`..`Z`, `F1`..`F12`, `Space`, `Tab`,
@@ -138,6 +150,12 @@ Modificabili dalla [GUI](../src/ControllerWarcraft.Gui/README.md) (pannello "Imp
 - `mouselook.curve.type`: `Linear` (default, = comportamento storico), `Power` (`y=x^exp`),
   `Exponential` (accelerazione normalizzata). `Linear` ignora `exponent`.
 - `radialMenu.trigger`: `None` (default, radial off), `LeftThumb` (L3), `RightThumb` (R3).
+- `cursor.activationButton`: `RightThumb` (R3, default storico), `LeftThumb` (L3), `Start`,
+  `None` (modalità cursore disattivata). Se un pulsante è sia `radialMenu.trigger` sia
+  `cursor.activationButton`, **vince il radial**; se è `LeftThumb`, L3 non fa più Tab-target.
+- `cursor.activationMode`: `Toggle` (default storico), `Hold` (momentaneo).
+- `inputHardening.thumbClickMinHoldMs`: intero ≥ 0 (ms). `0` (default) = nessuna soglia. Si applica
+  a toggle/hold cursore, Tab-target e apertura del radial. Consigliato ~60-120 ms.
 
 > **Mapping rigorosamente 1:1** (ANALISI §8): un keybind = un tasto (più modificatori). Lo schema
 > non prevede sequenze, macro, ripetizioni o timer. Nessuna automazione.

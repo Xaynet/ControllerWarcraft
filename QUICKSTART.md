@@ -89,14 +89,24 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 | RT / LT | Abilità 4 / 5 | — |
 | D-pad ↑ → ↓ ← | Abilità 6 / 7 / 8 / 9 | — |
 | **L3** (click stick sx) | Tab-target *(o radial menu)* | — |
-| **R3** (click stick dx) | Toggle → Cursore *(o radial menu)* | Toggle → Movimento |
+| **R3** (click stick dx) | Attiva Cursore *(pulsante e modalità configurabili — o radial menu)* | Torna a Movimento |
 | BACK | Esci | Esci |
 
 - I **layer** si attivano **tenendo** LB e/o RB *mentre* premi il tasto abilità.
   Priorità: **LB+RB > LB > RB > Base**.
+- **Modalità cursore — attivazione configurabile** (da `cwgui.exe`, pannello *Cursore*):
+  - **Pulsante**: default **R3**; puoi scegliere **L3**, **Start**, o **None** (disattiva del
+    tutto la modalità cursore). Se scegli L3, L3 non fa più Tab-target.
+  - **Modalità**: **Toggle** (default — una pressione entra, un'altra esce) oppure **Hold**
+    (momentaneo — cursore attivo *solo mentre tieni premuto* il pulsante; ottimo con Start o L3).
+- **Pressioni accidentali** (pannello *Hardening input*): i click-stick L3/R3 sono facili da
+  premere per sbaglio. Imposta un **hold minimo** in millisecondi (consigliato ~60-120 ms): un
+  tocco più breve viene ignorato. Default **0** = comportamento storico. Si applica a cursore,
+  Tab-target e apertura del radial.
 - **Radial menu** (se attivo nel profilo): tieni premuto il trigger (L3/R3),
   inclina lo stick destro verso un settore e **rilascia** per inviare quella
   singola abilità. Rilascio al centro = annulla. Sempre **1:1**, nessuna sequenza.
+  Se un pulsante è sia trigger radial sia attivazione cursore, **vince il radial**.
 
 ## Risoluzione problemi
 

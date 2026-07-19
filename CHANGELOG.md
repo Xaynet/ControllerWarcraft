@@ -7,6 +7,30 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Added
+- **Attivazione modalità cursore configurabile** (hardening input). Nuovi campi profilo
+  `cursor.activationButton` (`None` / `RightThumb` / `LeftThumb` / `Start`) e
+  `cursor.activationMode` (`Toggle` / `Hold`):
+  - **Toggle** (default): una pressione entra in modalità cursore, un'altra esce (comportamento storico).
+  - **Hold** (momentaneo): la modalità cursore è attiva solo *mentre* il pulsante è tenuto premuto.
+  - Il pulsante di attivazione è **rimappabile** (non più solo R3) e la modalità cursore si può
+    **disattivare** del tutto (`activationButton: "None"`).
+- **Mitigazione delle pressioni accidentali** di L3/R3 (e Start): nuova soglia opzionale di **hold
+  minimo** (`inputHardening.thumbClickMinHoldMs`, ms). Un click troppo breve non attiva più
+  cursore / Tab-target / radial. Default `0` = comportamento storico invariato.
+- GUI: nuove opzioni nel pannello *Cursore* (pulsante e modalità di attivazione) e nuovo pannello
+  *Hardening input* (hold minimo).
+
+### Changed
+- Schema profilo a **v1.3**. I file v1.0/v1.1/v1.2 restano validi: i nuovi campi hanno default che
+  riproducono **esattamente** il comportamento precedente (cursore su R3 in Toggle, hold minimo 0).
+- Preset `ascension`/`classic`/`retail` aggiornati con i nuovi campi impostati al comportamento attuale.
+
+### Precedenza (documentata)
+- Se un pulsante è sia il trigger del **radial menu** sia quello di attivazione **cursore**, vince
+  il radial. Se **L3** è usato per il cursore, non fa più Tab-target. L'hold minimo si applica a
+  toggle/hold cursore, Tab-target e apertura del radial.
+
 ## [0.1.1] - 2026-07-19
 
 ### Fixed

@@ -39,6 +39,16 @@
                 <x:Type TypeName="prof:RadialTrigger" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider x:Key="CursorButtonValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:CursorActivationButton" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="CursorModeValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:CursorActivationMode" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
 
         <Style TargetType="TextBlock" x:Key="Label">
             <Setter Property="Margin" Value="0,6,8,2" />
@@ -178,6 +188,33 @@
                             </DockPanel>
                             <CheckBox Content="Inverti asse Y" Margin="0,8,0,0"
                                       IsChecked="{Binding Cursor.InvertY}" />
+
+                            <!-- Hardening input: attivazione cursore configurabile. -->
+                            <TextBlock Text="Pulsante di attivazione" Style="{StaticResource Label}"
+                                       ToolTip="Pulsante che entra/esce dalla modalità cursore. None = modalità cursore disattivata. Default: R3." />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource CursorButtonValues}}"
+                                      SelectedItem="{Binding CursorActivationButton}" />
+                            <TextBlock Text="Modalità di attivazione" Style="{StaticResource Label}"
+                                       ToolTip="Toggle: una pressione entra, un'altra esce (default). Hold: cursore attivo solo mentre tieni premuto il pulsante." />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource CursorModeValues}}"
+                                      SelectedItem="{Binding CursorActivationMode}" />
+                            <TextBlock Text="Se scegli L3 come pulsante, L3 non farà più Tab-target. None disattiva del tutto la modalità cursore."
+                                       Foreground="#777" TextWrapping="Wrap" Margin="0,4,0,0" FontSize="11" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Hardening input (pressioni accidentali)">
+                        <StackPanel>
+                            <TextBlock Text="Hold minimo click-stick / Start (ms)" Style="{StaticResource Label}"
+                                       ToolTip="Durata minima di pressione perché L3/R3 (e Start) contino. Scarta i tocchi involontari. 0 = disattivato (comportamento storico). Consigliato 60-120 ms." />
+                            <DockPanel>
+                                <TextBox DockPanel.Dock="Right" Width="60"
+                                         Text="{Binding ThumbClickMinHoldMs, UpdateSourceTrigger=PropertyChanged}" />
+                                <Slider Minimum="0" Maximum="400" TickFrequency="10" IsSnapToTickEnabled="True"
+                                        Value="{Binding ThumbClickMinHoldMs}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <TextBlock Text="Si applica a toggle/hold cursore, Tab-target e apertura del radial menu."
+                                       Foreground="#777" TextWrapping="Wrap" Margin="0,4,0,0" FontSize="11" />
                         </StackPanel>
                     </GroupBox>
 

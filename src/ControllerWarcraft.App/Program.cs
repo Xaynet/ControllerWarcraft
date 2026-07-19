@@ -22,8 +22,9 @@ using ControllerWarcraft.Overlay;
 //    X               -> abilita' | Click destro (cursore)
 //    B / Y / D-pad / grilletti -> abilita' secondo il layer
 //    L3              -> Tab-target
-//    R3              -> Toggle Modalita' (Movimento <-> Cursore)
+//    R3              -> Attiva Modalita' Cursore (pulsante e Toggle/Hold configurabili nel profilo)
 //    Back            -> Uscita pulita
+//  Attivazione cursore configurabile + hold minimo anti-pressioni-accidentali (hardening input).
 //  Mapping rigorosamente 1:1, nessuna automazione (ANALISI §8).
 // ============================================================================
 
@@ -121,7 +122,7 @@ if (companionEnabled)
 Console.WriteLine("ControllerWarcraft — App (Fase 3: UX)");
 Console.WriteLine($"Profilo: {profile.Name}  [versione gioco: {profile.GameVersion}]");
 Console.WriteLine("Collega un controller Xbox. Apri WoW (o Blocco note per un test sicuro).");
-Console.WriteLine("R3=cambia modalita' · L3=Tab-target · LB/RB/LB+RB=layer abilita' · BACK=esci.");
+Console.WriteLine("R3=attiva cursore (configurabile) · L3=Tab-target · LB/RB/LB+RB=layer abilita' · BACK=esci.");
 Console.WriteLine($"Overlay: {(overlay?.IsRunning == true ? "attivo" : "disattivo")} · " +
                   $"Auto-switch: {(autoSwitch ? "attivo" : "disattivo")} · " +
                   $"Radial: {(host.RadialUsable ? "attivo (tieni premuto il trigger)" : "disattivo")}");
