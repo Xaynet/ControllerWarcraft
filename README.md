@@ -43,6 +43,7 @@ semplici **profili JSON**. Il mapping è rigorosamente **1:1**, senza automazion
 | `src/ControllerWarcraft.Gui` | GUI WPF di remap/selezione profili (`cwgui.exe`) |
 | `src/ControllerWarcraft.Overlay` | Libreria WPF: overlay modalità + radial menu |
 | `src/ControllerWarcraft.Spike` | Spike Fase 0 (proof-of-concept) |
+| `src/ControllerWarcraft.Tests` | Test automatici (xUnit) dei componenti puri del Core |
 | `profiles/` | Preset JSON per versione + `classes/` |
 | `addon/` | Companion addon WoW opzionale (Lua) |
 
@@ -58,6 +59,16 @@ Per eseguire il runtime dal sorgente:
 
 ```powershell
 dotnet run -c Release --project src/ControllerWarcraft.App
+```
+
+### Test
+
+I test automatici (xUnit) coprono i componenti puri del Core (`HoldGate`, `RadialMenuResolver`,
+`ResponseCurve`, `ClassPreset`, `CompanionStateReader`, `ProfileManager`) inclusa la
+retro-compatibilità dei profili. Girano anche in CI su ogni push/PR.
+
+```powershell
+dotnet test ControllerWarcraft.slnx -c Release
 ```
 
 > ⚠️ L'app invia input reali di tastiera/mouse. Provala prima con il **Blocco note**

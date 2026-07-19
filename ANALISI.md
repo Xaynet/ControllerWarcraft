@@ -188,6 +188,16 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   radial. Rigorosamente 1:1: si rimappa *quando* e *come* si legge l'input, mai *cosa* viene
   eseguito — nessuna automazione.
 
+- **Test automatici & CI (post-Fase 4):** ✅ *Fatto.* Progetto `src/ControllerWarcraft.Tests`
+  (xUnit, `net10.0-windows`) che copre i componenti **puri** del Core con casi limite: `HoldGate`
+  (soglia hold minimo), `RadialMenuResolver` (geometria dei settori), `ResponseCurve` (curve di
+  sensibilità), `ClassPreset.ApplyTo` (merge/override), `CompanionStateReader.TryParse` (parser
+  tollerante) e `ProfileManager` (round-trip save→load, fallback ai built-in). Include un test
+  esplicito di **retro-compatibilità** dei profili (un JSON privo dei campi recenti riproduce i
+  default storici) e la validazione dei preset JSON reali. La CI (`ci.yml`) esegue `dotnet test`
+  dopo la build su ogni push/PR verso `main`. Restano scoperti — perché richiedono XInput/SendInput
+  o UI e non sono testabili headless — `MappingEngine`, l'App, la GUI e l'Overlay.
+
 ## 10. Rilascio & CI/CD
 
 Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:

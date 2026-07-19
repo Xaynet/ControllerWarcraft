@@ -20,6 +20,13 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
   cursore / Tab-target / radial. Default `0` = comportamento storico invariato.
 - GUI: nuove opzioni nel pannello *Cursore* (pulsante e modalità di attivazione) e nuovo pannello
   *Hardening input* (hold minimo).
+- **Suite di test automatici** (`src/ControllerWarcraft.Tests`, xUnit) sui componenti puri del Core:
+  `HoldGate`, `RadialMenuResolver`, `ResponseCurve`, `ClassPreset.ApplyTo`,
+  `CompanionStateReader.TryParse` e `ProfileManager` (round-trip, fallback). Incluso un test esplicito
+  di **retro-compatibilità** dei profili (un JSON "vecchio stile" privo dei campi recenti produce i
+  default storici: cursore su R3 in Toggle, hold minimo 0, radial disattivo, curva lineare) e la
+  verifica che i preset JSON reali in `profiles/` e `profiles/classes/` deserializzino senza errori.
+- **CI**: la pipeline esegue ora `dotnet test` dopo la build su ogni push/PR verso `main`.
 
 ### Changed
 - Schema profilo a **v1.3**. I file v1.0/v1.1/v1.2 restano validi: i nuovi campi hanno default che

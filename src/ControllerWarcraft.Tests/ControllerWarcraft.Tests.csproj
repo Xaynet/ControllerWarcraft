@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Suite di test automatici (xUnit) per i componenti puri di ControllerWarcraft.Core.
+         net10.0-windows per coerenza con Core: Core ha come target net10.0-windows, quindi
+         il progetto di test deve poterlo referenziare senza forzare un target diverso. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Solo Core: evitiamo App/Gui/Overlay (UI + P/Invoke, non testabili headless). -->
+    <ProjectReference Include="..\ControllerWarcraft.Core\ControllerWarcraft.Core.csproj" />
+  </ItemGroup>
+
+</Project>

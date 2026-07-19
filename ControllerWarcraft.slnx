@@ -5,5 +5,6 @@
     <Project Path="src/ControllerWarcraft.Gui/ControllerWarcraft.Gui.csproj" />
     <Project Path="src/ControllerWarcraft.Overlay/ControllerWarcraft.Overlay.csproj" />
     <Project Path="src/ControllerWarcraft.Spike/ControllerWarcraft.Spike.csproj" />
+    <Project Path="src/ControllerWarcraft.Tests/ControllerWarcraft.Tests.csproj" />
   </Folder>
 </Solution>
