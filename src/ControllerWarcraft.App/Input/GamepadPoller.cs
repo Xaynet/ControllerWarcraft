@@ -1,14 +1,17 @@
-using ControllerWarcraft.App.Native;
+using ControllerWarcraft.Core.Input;
 
 namespace ControllerWarcraft.App.Input;
 
 /// <summary>
-/// Legge lo stato del gamepad via XInput e lo converte in un <see cref="GamepadSnapshot"/>
-/// normalizzato. Applica le deadzone radiali per-stick e soglia i grilletti.
-/// E' l'unico punto che parla direttamente con XInput (Input Poller di ANALISI §5).
+/// Legge lo stato del gamepad e lo converte in un <see cref="GamepadSnapshot"/> normalizzato per il
+/// gioco. Applica le deadzone radiali per-stick e soglia i grilletti a bool.
+/// È l'Input Poller di ANALISI §5. La lettura grezza XInput passa ora per il
+/// <see cref="XInputReader"/> condiviso del Core (di sola lettura); il poller resta responsabile
+/// solo della normalizzazione specifica per il gioco (deadzone/soglia dal profilo).
 /// </summary>
 public sealed class GamepadPoller
 {
+    private readonly XInputReader _reader = new();
     private readonly uint _userIndex;
     private readonly short _leftDeadzone;
     private readonly short _rightDeadzone;
@@ -19,8 +22,8 @@ public sealed class GamepadPoller
     public GamepadPoller(uint userIndex = 0, double? leftDeadzone = null, double? rightDeadzone = null)
     {
         _userIndex = userIndex;
-        _leftDeadzone = ToRaw(leftDeadzone, NativeMethods.LeftThumbDeadzone);
-        _rightDeadzone = ToRaw(rightDeadzone, NativeMethods.RightThumbDeadzone);
+        _leftDeadzone = ToRaw(leftDeadzone, XInputReader.LeftThumbDeadzone);
+        _rightDeadzone = ToRaw(rightDeadzone, XInputReader.RightThumbDeadzone);
     }
 
     // Converte una deadzone normalizzata (0..1) nelle unita' grezze XInput (0..32767).
@@ -33,40 +36,39 @@ public sealed class GamepadPoller
 
     public GamepadSnapshot Poll()
     {
-        if (NativeMethods.XInputGetState(_userIndex, out var state) != 0)
+        if (!_reader.TryGetState(_userIndex, out var pad))
             return GamepadSnapshot.Disconnected;
 
-        var pad = state.Gamepad;
-        var b = (NativeMethods.GamepadButton)pad.wButtons;
+        var b = (GamepadButton)pad.Buttons;
 
         return new GamepadSnapshot
         {
             Connected = true,
 
-            LeftX = Normalize(pad.sThumbLX, _leftDeadzone),
-            LeftY = Normalize(pad.sThumbLY, _leftDeadzone),
-            RightX = Normalize(pad.sThumbRX, _rightDeadzone),
-            RightY = Normalize(pad.sThumbRY, _rightDeadzone),
+            LeftX = Normalize(pad.ThumbLX, _leftDeadzone),
+            LeftY = Normalize(pad.ThumbLY, _leftDeadzone),
+            RightX = Normalize(pad.ThumbRX, _rightDeadzone),
+            RightY = Normalize(pad.ThumbRY, _rightDeadzone),
 
-            A = b.HasFlag(NativeMethods.GamepadButton.A),
-            B = b.HasFlag(NativeMethods.GamepadButton.B),
-            X = b.HasFlag(NativeMethods.GamepadButton.X),
-            Y = b.HasFlag(NativeMethods.GamepadButton.Y),
+            A = b.HasFlag(GamepadButton.A),
+            B = b.HasFlag(GamepadButton.B),
+            X = b.HasFlag(GamepadButton.X),
+            Y = b.HasFlag(GamepadButton.Y),
 
-            LeftShoulder = b.HasFlag(NativeMethods.GamepadButton.LeftShoulder),
-            RightShoulder = b.HasFlag(NativeMethods.GamepadButton.RightShoulder),
-            LeftTrigger = pad.bLeftTrigger > NativeMethods.TriggerThreshold,
-            RightTrigger = pad.bRightTrigger > NativeMethods.TriggerThreshold,
+            LeftShoulder = b.HasFlag(GamepadButton.LeftShoulder),
+            RightShoulder = b.HasFlag(GamepadButton.RightShoulder),
+            LeftTrigger = pad.LeftTrigger > XInputReader.TriggerThreshold,
+            RightTrigger = pad.RightTrigger > XInputReader.TriggerThreshold,
 
-            DPadUp = b.HasFlag(NativeMethods.GamepadButton.DPadUp),
-            DPadDown = b.HasFlag(NativeMethods.GamepadButton.DPadDown),
-            DPadLeft = b.HasFlag(NativeMethods.GamepadButton.DPadLeft),
-            DPadRight = b.HasFlag(NativeMethods.GamepadButton.DPadRight),
+            DPadUp = b.HasFlag(GamepadButton.DPadUp),
+            DPadDown = b.HasFlag(GamepadButton.DPadDown),
+            DPadLeft = b.HasFlag(GamepadButton.DPadLeft),
+            DPadRight = b.HasFlag(GamepadButton.DPadRight),
 
-            LeftThumbClick = b.HasFlag(NativeMethods.GamepadButton.LeftThumb),
-            RightThumbClick = b.HasFlag(NativeMethods.GamepadButton.RightThumb),
-            Start = b.HasFlag(NativeMethods.GamepadButton.Start),
-            Back = b.HasFlag(NativeMethods.GamepadButton.Back),
+            LeftThumbClick = b.HasFlag(GamepadButton.LeftThumb),
+            RightThumbClick = b.HasFlag(GamepadButton.RightThumb),
+            Start = b.HasFlag(GamepadButton.Start),
+            Back = b.HasFlag(GamepadButton.Back),
         };
     }
 

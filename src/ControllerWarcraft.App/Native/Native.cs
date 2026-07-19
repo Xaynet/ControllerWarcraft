@@ -4,65 +4,18 @@ using ControllerWarcraft.Core.Input;
 namespace ControllerWarcraft.App.Native;
 
 /// <summary>
-/// P/Invoke minimale per XInput (lettura gamepad) e SendInput (emulazione KB/mouse).
-/// Evoluzione del <c>Native.cs</c> dello Spike Fase 0.
+/// P/Invoke minimale per <b>SendInput</b> (emulazione KB/mouse). Evoluzione del <c>Native.cs</c>
+/// dello Spike Fase 0.
 ///
-/// Fase 2: l'enum <see cref="ScanCode"/> e' stato spostato in
-/// <c>ControllerWarcraft.Core.Input</c> perche' fa parte dello schema di profilo
-/// serializzato; qui restano solo le funzioni native che lo consumano.
+/// Fase 2: l'enum <see cref="ScanCode"/> è stato spostato in
+/// <c>ControllerWarcraft.Core.Input</c> perché fa parte dello schema di profilo serializzato.
+///
+/// Onboarding wizard: la lettura XInput (che era qui accanto a SendInput) è stata estratta nel
+/// Core come <see cref="XInputReader"/> di sola lettura, condivisa con la Gui. Qui resta
+/// <b>solo</b> l'emulazione dell'output: SendInput è e resta esclusivo dell'App.
 /// </summary>
 public static class NativeMethods
 {
-    // ======================= XInput =======================
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct XInputGamepad
-    {
-        public ushort wButtons;
-        public byte bLeftTrigger;
-        public byte bRightTrigger;
-        public short sThumbLX;
-        public short sThumbLY;
-        public short sThumbRX;
-        public short sThumbRY;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct XInputState
-    {
-        public uint dwPacketNumber;
-        public XInputGamepad Gamepad;
-    }
-
-    // xinput1_4.dll = Windows 8+. Ritorna 0 (ERROR_SUCCESS) se il controller e' connesso.
-    [DllImport("xinput1_4.dll")]
-    public static extern uint XInputGetState(uint dwUserIndex, out XInputState pState);
-
-    [Flags]
-    public enum GamepadButton : ushort
-    {
-        DPadUp = 0x0001,
-        DPadDown = 0x0002,
-        DPadLeft = 0x0004,
-        DPadRight = 0x0008,
-        Start = 0x0010,
-        Back = 0x0020,
-        LeftThumb = 0x0040,
-        RightThumb = 0x0080,
-        LeftShoulder = 0x0100,
-        RightShoulder = 0x0200,
-        A = 0x1000,
-        B = 0x2000,
-        X = 0x4000,
-        Y = 0x8000,
-    }
-
-    // Deadzone consigliate da Microsoft.
-    public const short LeftThumbDeadzone = 7849;
-    public const short RightThumbDeadzone = 8689;
-    // Soglia grilletto (0..255): oltre questa il grilletto conta come "premuto".
-    public const byte TriggerThreshold = 30;
-
     // ======================= SendInput =======================
 
     private const uint INPUT_MOUSE = 0;

@@ -1,0 +1,113 @@
+<UserControl x:Class="ControllerWarcraft.Gui.Controls.ControllerTestView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mvvm="clr-namespace:ControllerWarcraft.Gui.Mvvm"
+             Loaded="OnLoaded" Unloaded="OnUnloaded">
+
+    <UserControl.Resources>
+        <mvvm:BoolToBrushConverter x:Key="BoolToBrush" />
+
+        <!-- Indicatore di pulsante: si accende quando premuto (Background via converter). -->
+        <Style x:Key="Btn" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="MinWidth" Value="46" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+        <Style x:Key="BtnText" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <!-- Slot + stato connessione -->
+        <DockPanel Margin="0,0,0,10">
+            <TextBlock Text="Slot XInput:" VerticalAlignment="Center" Margin="0,0,6,0" FontWeight="SemiBold" />
+            <ComboBox Width="60" DockPanel.Dock="Left"
+                      ItemsSource="{Binding UserIndices}" SelectedItem="{Binding UserIndex}" />
+            <Border Margin="12,0,0,0" CornerRadius="4" Padding="8,4"
+                    Background="{Binding IsConnected, Converter={StaticResource BoolToBrush}}">
+                <TextBlock Text="{Binding ConnectionText}" Foreground="#222" />
+            </Border>
+        </DockPanel>
+
+        <!-- Stick + grilletti -->
+        <UniformGrid Columns="2" Margin="0,0,0,6">
+            <!-- Stick sinistro -->
+            <StackPanel Margin="0,0,8,0">
+                <TextBlock Text="Stick sinistro (movimento)" FontWeight="SemiBold" Margin="0,0,0,4" />
+                <Border Width="130" Height="130" BorderBrush="#AAA" BorderThickness="1"
+                        CornerRadius="65" Background="#FAFAFB" HorizontalAlignment="Left">
+                    <Canvas Width="130" Height="130">
+                        <Line X1="65" Y1="0" X2="65" Y2="130" Stroke="#EEE" />
+                        <Line X1="0" Y1="65" X2="130" Y2="65" Stroke="#EEE" />
+                        <Ellipse Width="18" Height="18" Fill="#1565C0"
+                                 Canvas.Left="{Binding LeftDotX}" Canvas.Top="{Binding LeftDotY}" />
+                    </Canvas>
+                </Border>
+                <TextBlock Text="{Binding LeftStickText}" Margin="0,4,0,0" FontFamily="Consolas" Foreground="#555" />
+            </StackPanel>
+
+            <!-- Stick destro -->
+            <StackPanel Margin="8,0,0,0">
+                <TextBlock Text="Stick destro (camera / cursore)" FontWeight="SemiBold" Margin="0,0,0,4" />
+                <Border Width="130" Height="130" BorderBrush="#AAA" BorderThickness="1"
+                        CornerRadius="65" Background="#FAFAFB" HorizontalAlignment="Left">
+                    <Canvas Width="130" Height="130">
+                        <Line X1="65" Y1="0" X2="65" Y2="130" Stroke="#EEE" />
+                        <Line X1="0" Y1="65" X2="130" Y2="65" Stroke="#EEE" />
+                        <Ellipse Width="18" Height="18" Fill="#6A1B9A"
+                                 Canvas.Left="{Binding RightDotX}" Canvas.Top="{Binding RightDotY}" />
+                    </Canvas>
+                </Border>
+                <TextBlock Text="{Binding RightStickText}" Margin="0,4,0,0" FontFamily="Consolas" Foreground="#555" />
+            </StackPanel>
+        </UniformGrid>
+
+        <!-- Grilletti analogici -->
+        <Grid Margin="0,6,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                <DockPanel>
+                    <TextBlock Text="LT" FontWeight="SemiBold" DockPanel.Dock="Left" Margin="0,0,6,0" />
+                    <TextBlock Text="{Binding LeftTriggerText}" DockPanel.Dock="Right" Foreground="#555" />
+                    <ProgressBar Minimum="0" Maximum="1" Height="14" Value="{Binding LeftTriggerValue, Mode=OneWay}" />
+                </DockPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                <DockPanel>
+                    <TextBlock Text="RT" FontWeight="SemiBold" DockPanel.Dock="Left" Margin="0,0,6,0" />
+                    <TextBlock Text="{Binding RightTriggerText}" DockPanel.Dock="Right" Foreground="#555" />
+                    <ProgressBar Minimum="0" Maximum="1" Height="14" Value="{Binding RightTriggerValue, Mode=OneWay}" />
+                </DockPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Pulsanti -->
+        <TextBlock Text="Pulsanti (si accendono quando premuti)" FontWeight="SemiBold" Margin="0,0,0,4" />
+        <WrapPanel>
+            <Border Style="{StaticResource Btn}" Background="{Binding A, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="A" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding B, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="B" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding X, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="X" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding Y, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="Y" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding LeftShoulder, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="LB" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding RightShoulder, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="RB" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding LeftTriggerPressed, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="LT" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding RightTriggerPressed, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="RT" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding LeftThumbClick, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="L3" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding RightThumbClick, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="R3" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding DPadUp, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="D↑" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding DPadDown, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="D↓" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding DPadLeft, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="D←" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding DPadRight, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="D→" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding Start, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="Start" /></Border>
+            <Border Style="{StaticResource Btn}" Background="{Binding Back, Converter={StaticResource BoolToBrush}}"><TextBlock Style="{StaticResource BtnText}" Text="Back" /></Border>
+        </WrapPanel>
+    </StackPanel>
+</UserControl>

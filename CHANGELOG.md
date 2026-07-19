@@ -8,6 +8,24 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Added
+- **Wizard di primo avvio** nella GUI (`cwgui.exe`): mostrato automaticamente al primo lancio
+  (quando manca `settings.json` o il flag `setupCompleted` è `false`) e riapribile dal pulsante
+  *Wizard di primo avvio*. Passi: benvenuto + test del controller → scelta versione
+  (Ascension/Classic/Retail) e preset di classe opzionale (salvati come profilo attivo) → tabella
+  dei keybinding da impostare in WoW → avviso sul prompt UAC/admin e spiegazione della modalità
+  cursore. Al termine imposta `setupCompleted = true`.
+- **Pannello di test del controller (live)** nella GUI: tab *Test controller* (e primo passo del
+  wizard) che mostra in tempo reale posizione dei due stick, grilletti analogici, D-pad e pulsanti
+  (~60 Hz), con scelta dello slot XInput (0-3). Strumento di verifica e troubleshooting.
+- **Lettore XInput condiviso di sola lettura** nel Core (`XInputReader` + `ControllerReading`): fa
+  P/Invoke di **esclusivamente** `XInputGetState`, nessun SendInput. Consente a GUI e App di leggere
+  il controller condividendo un unico P/Invoke, **senza** che la GUI possa iniettare input
+  (l'emulazione SendInput resta esclusiva dell'App). L'App legge ora via questo componente.
+- **Flag `setupCompleted`** in `AppSettings` (Core, default `false`). Retro-compatibile: assente ⇒
+  `false` ⇒ il wizard viene mostrato **una volta**; gli altri campi restano invariati.
+- Test: normalizzazione pura `ControllerReading.FromRaw` (raw XInput → valori normalizzati) e logica
+  di onboarding (`OnboardingInfo.NeedsSetup`, retro-compatibilità del flag, `MarkSetupCompleted`,
+  contenuti informativi del wizard).
 - **Attivazione modalità cursore configurabile** (hardening input). Nuovi campi profilo
   `cursor.activationButton` (`None` / `RightThumb` / `LeftThumb` / `Start`) e
   `cursor.activationMode` (`Toggle` / `Hold`):
@@ -32,6 +50,12 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 - Schema profilo a **v1.3**. I file v1.0/v1.1/v1.2 restano validi: i nuovi campi hanno default che
   riproducono **esattamente** il comportamento precedente (cursore su R3 in Toggle, hold minimo 0).
 - Preset `ascension`/`classic`/`retail` aggiornati con i nuovi campi impostati al comportamento attuale.
+- **Refactor interno (nessun cambiamento di comportamento del runtime)**: la lettura XInput è stata
+  estratta dal `NativeMethods` dell'App al `XInputReader` di sola lettura del Core; il `NativeMethods`
+  dell'App ora contiene solo l'emulazione SendInput. Il `GamepadPoller` dell'App usa il lettore
+  condiviso mantenendo la stessa normalizzazione di gioco.
+- La finestra della GUI è ora organizzata in tab (*Editor profili* / *Test controller*) con una
+  toolbar che include il pulsante del wizard.
 
 ### Precedenza (documentata)
 - Se un pulsante è sia il trigger del **radial menu** sia quello di attivazione **cursore**, vince

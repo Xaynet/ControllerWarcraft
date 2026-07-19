@@ -29,9 +29,27 @@ addon/               # companion addon OPZIONALE (WoW/Lua)
 RELEASING.md
 ```
 
-## 3. Test sicuro (prima del gioco)
+## 3. Primo avvio guidato (wizard) — consigliato
 
-L'app invia **input reali** di tastiera/mouse: conviene provarla al sicuro.
+Apri **`cwgui.exe`**: al primo lancio parte automaticamente un **wizard di primo avvio** che copre i
+passi seguenti in modo guidato (ed è riapribile in qualsiasi momento dal pulsante *Wizard di primo
+avvio*). Ti fa:
+
+1. **testare il controller** in tempo reale (stick, grilletti, pulsanti) — così confermi subito che
+   Windows lo vede e capisci la mappatura;
+2. **scegliere la versione** (Ascension/Classic/Retail) ed eventualmente un preset di classe →
+   diventa il profilo attivo;
+3. mostrarti la **tabella dei keybinding da impostare in WoW** (vedi §5);
+4. avvisarti del **prompt UAC** e spiegarti la **modalità cursore**.
+
+> Il `cwgui.exe` e il suo pannello di test **leggono soltanto** il controller: non inviano mai input
+> al gioco. Il tab **Test controller** resta disponibile come strumento di diagnosi.
+
+I paragrafi §4-§6 restano validi come riferimento (e per chi preferisce la configurazione manuale).
+
+## 4. Test sicuro dell'iniezione (prima del gioco)
+
+L'app `cwapp.exe` invia **input reali** di tastiera/mouse: conviene provarla al sicuro.
 
 1. Apri il **Blocco note** e tienilo in primo piano.
 2. Avvia `cwapp.exe`.
@@ -40,7 +58,7 @@ L'app invia **input reali** di tastiera/mouse: conviene provarla al sicuro.
 
 Se funziona qui, l'iniezione input è a posto.
 
-## 4. Configura i keybinding DENTRO WoW (una tantum, passo cruciale)
+## 5. Configura i keybinding DENTRO WoW (una tantum, passo cruciale)
 
 L'app manda dei **tasti**; il gioco deve avere le abilità legate a quei tasti.
 In WoW: *Menu di gioco → Tasti (Keybindings)* imposta gli slot dell'action bar:
@@ -55,9 +73,9 @@ In WoW: *Menu di gioco → Tasti (Keybindings)* imposta gli slot dell'action bar
 Sono i default di molte configurazioni WoW. Se le tue differiscono, adatta i
 binding in gioco **oppure** il profilo con `cwgui.exe`.
 
-## 5. Scegli il profilo
+## 6. Scegli il profilo
 
-Apri `cwgui.exe`:
+Apri `cwgui.exe` (tab **Editor profili**):
 
 - Seleziona la **versione**: Ascension / Classic / Retail.
 - (Opzionale) applica un **preset di classe** (warrior / mage / hunter).
@@ -67,7 +85,7 @@ Apri `cwgui.exe`:
 
 Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 
-## 6. Gioca
+## 7. Gioca
 
 1. Avvia `cwapp.exe` e **accetta il prompt UAC** (serve per inviare input al gioco,
    che gira da amministratore).

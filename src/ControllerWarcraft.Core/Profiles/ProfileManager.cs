@@ -300,6 +300,18 @@ public sealed class ProfileManager
         SaveSettings(s);
     }
 
+    /// <summary>
+    /// Marca il wizard di primo avvio come completato (<see cref="AppSettings.SetupCompleted"/> =
+    /// true) preservando il resto delle impostazioni. Idempotente.
+    /// </summary>
+    public void MarkSetupCompleted()
+    {
+        var s = LoadSettings();
+        if (s.SetupCompleted) return;
+        s.SetupCompleted = true;
+        SaveSettings(s);
+    }
+
     // -------------------------------------------------------------- helper
 
     /// <summary>Converte un nome leggibile in un file stem sicuro (minuscolo, senza spazi/simboli).</summary>

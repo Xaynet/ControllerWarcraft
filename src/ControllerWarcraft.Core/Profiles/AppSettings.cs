@@ -13,6 +13,19 @@ public sealed class AppSettings
     /// <summary>Nome (file stem, es. <c>"ascension"</c>) del profilo da caricare all'avvio.</summary>
     public string ActiveProfile { get; set; } = "ascension";
 
+    // ---------------------------------------------------------------- primo avvio (onboarding wizard)
+
+    /// <summary>
+    /// <c>true</c> quando l'utente ha completato (o saltato) il wizard di primo avvio della Gui.
+    /// La Gui mostra il wizard automaticamente finché questo flag è <c>false</c>.
+    ///
+    /// Retro-compatibile: assente ⇒ <c>false</c> ⇒ il wizard viene mostrato <b>una volta</b>. Un
+    /// <c>settings.json</c> esistente (senza questo campo) fa comparire il wizard al primo avvio
+    /// dopo l'aggiornamento; una volta chiuso/completato il flag diventa <c>true</c> e non riappare.
+    /// Riapribile in qualsiasi momento da un pulsante nella Gui.
+    /// </summary>
+    public bool SetupCompleted { get; set; } = false;
+
     // ---------------------------------------------------------------- overlay (Fase 3, punto 1)
 
     /// <summary>Mostra l'overlay trasparente always-on-top con la modalità/layer correnti.</summary>

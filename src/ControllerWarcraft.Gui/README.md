@@ -1,4 +1,4 @@
-# ControllerWarcraft — Gui (editor di profili, Fase 2 → 4)
+# ControllerWarcraft — Gui (editor di profili + wizard + test controller)
 
 Applicazione **WPF** per selezionare il profilo attivo, vedere/modificare le mappature e le
 curve di sensibilità, e salvare. È l'anello "GUI Configuratore" di [ANALISI.md §5](../../ANALISI.md)
@@ -6,6 +6,38 @@ ed è costruita sullo stack consigliato in [§6](../../ANALISI.md) (C#/.NET + WP
 
 > La GUI **non invia mai input** al gioco: legge e scrive soltanto i profili JSON tramite lo
 > stesso `ProfileManager` usato dal runtime ([`ControllerWarcraft.Core`](../ControllerWarcraft.Core/)).
+> Il pannello di test del controller **legge** il gamepad tramite il `XInputReader` di **sola
+> lettura** del Core: non esiste alcun percorso, nella GUI, per emulare tastiera/mouse (SendInput
+> vive solo nell'App).
+
+La finestra è organizzata in due tab — **Editor profili** e **Test controller** — più un
+**wizard di primo avvio** riapribile dal pulsante *Wizard di primo avvio*.
+
+## Wizard di primo avvio
+
+Compare **automaticamente al primo lancio** (quando manca `settings.json` o il flag
+`setupCompleted` è `false`) e resta riapribile in qualsiasi momento. Guida l'utente nei punti che
+davano più attrito ai tester:
+
+1. **Benvenuto + test del controller** (pannello live, vedi sotto).
+2. **Scelta della versione** (Ascension/Classic/Retail) + preset di classe opzionale → salvato come
+   profilo attivo.
+3. **Keybinding da impostare in WoW** (tabella 1-9, Shift+1-9, Ctrl+1-9, Shift+Ctrl+1-9), con nota
+   che sono adattabili.
+4. **Prompt UAC/admin** di `cwapp.exe` e funzionamento della **modalità cursore** (toggle R3, o
+   Hold/None).
+
+Al termine (*Fine*) o allo *Salta* imposta `setupCompleted = true` in `settings.json`, così non
+riappare. È retro-compatibile: un `settings.json` esistente senza il flag lo tratta come `false`
+e mostra il wizard **una volta**.
+
+## Test controller (live)
+
+Il tab **Test controller** (e il primo passo del wizard) mostra in tempo reale lo stato del
+gamepad — posizione dei due stick, grilletti analogici, D-pad e tutti i pulsanti — leggendo XInput
+~60 volte al secondo. Serve a confermare che il controller funziona e a capire la mappatura, ed è
+un utile strumento di troubleshooting (drift dello stick, grilletto sporco, controller sullo slot
+sbagliato). È possibile selezionare lo **slot XInput** (0-3).
 
 ## Cosa fa
 
@@ -47,19 +79,26 @@ oppure l'eseguibile compilato:
 MVVM leggero, senza dipendenze esterne:
 
 ```
-Mvvm/        ObservableObject         base INotifyPropertyChanged
-             RelayCommand             ICommand delegante
-ViewModels/  MainViewModel            elenco profili, impostazioni bindabili, comandi
-             AbilityRowViewModel      riga editabile della tabella abilità
-             KeybindEditorViewModel   adattatore editabile per i Keybind di sistema (record struct)
-             ProcessMapRowViewModel   riga della mappa auto-switch processo → profilo
-             RadialItemRowViewModel   riga editabile di una voce del radial menu (Fase 4)
-MainWindow.xaml(.cs)                  UI: selezione + pannelli impostazioni + DataGrid
-App.xaml(.cs)                         bootstrap WPF
+Mvvm/        ObservableObject          base INotifyPropertyChanged
+             RelayCommand              ICommand delegante
+             BoolToBrushConverter      evidenzia i pulsanti premuti nel pannello di test
+ViewModels/  MainViewModel             elenco profili, impostazioni bindabili, comandi, wizard, test
+             AbilityRowViewModel       riga editabile della tabella abilità
+             KeybindEditorViewModel    adattatore editabile per i Keybind di sistema (record struct)
+             ProcessMapRowViewModel    riga della mappa auto-switch processo → profilo
+             RadialItemRowViewModel    riga editabile di una voce del radial menu (Fase 4)
+             ControllerTestViewModel   polling live (sola lettura) del gamepad via Core XInputReader
+             WizardViewModel           passi del wizard di primo avvio (logica dati nel Core)
+Controls/    ControllerTestView.xaml   pannello di test riusabile (tab + wizard)
+Windows/     WizardWindow.xaml         finestra modale del wizard di primo avvio
+MainWindow.xaml(.cs)                   UI: tab Editor/Test + pulsante wizard + avvio wizard al 1° lancio
+App.xaml(.cs)                          bootstrap WPF
 ```
 
-Il modello dati (schema profilo, `ProfileManager`, preset) vive nel Core condiviso, quindi GUI e
-App restano sempre allineate sul formato.
+Il modello dati (schema profilo, `ProfileManager`, preset), i contenuti puri del wizard
+(`Onboarding/OnboardingInfo`) e il lettore XInput di sola lettura (`Input/XInputReader`) vivono nel
+Core condiviso, quindi GUI e App restano sempre allineate sul formato e il P/Invoke di lettura non è
+duplicato.
 
 ## Limiti attuali
 

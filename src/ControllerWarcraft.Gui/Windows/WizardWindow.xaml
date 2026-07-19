@@ -1,0 +1,155 @@
+<Window x:Class="ControllerWarcraft.Gui.Windows.WizardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ControllerWarcraft.Gui.Controls"
+        Title="ControllerWarcraft — Primo avvio"
+        Height="640" Width="680" MinHeight="560" MinWidth="620"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="B2V" />
+        <Style TargetType="TextBlock" x:Key="H2">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="Body">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Foreground" Value="#333" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel Margin="16">
+
+        <!-- Intestazione -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock Text="{Binding StepIndicator}" Foreground="#888" FontSize="12" />
+            <TextBlock Text="{Binding StepTitle}" FontSize="20" FontWeight="Bold" />
+            <Separator Margin="0,8,0,0" />
+        </StackPanel>
+
+        <!-- Barra dei pulsanti -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Button Content="Salta" MinWidth="90" HorizontalAlignment="Left"
+                    DockPanel.Dock="Left" Command="{Binding SkipCommand}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Indietro" MinWidth="90" Margin="4,0"
+                        Command="{Binding BackCommand}" />
+                <Button Content="Avanti" MinWidth="90" Margin="4,0"
+                        Command="{Binding NextCommand}"
+                        Visibility="{Binding ShowNext, Converter={StaticResource B2V}}" />
+                <Button Content="Fine" MinWidth="90" Margin="4,0" IsDefault="True"
+                        Command="{Binding FinishCommand}"
+                        Visibility="{Binding IsLastStep, Converter={StaticResource B2V}}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Stato -->
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="#B00"
+                   TextWrapping="Wrap" Margin="0,8,0,0" />
+
+        <!-- Corpo: un pannello per passo -->
+        <Grid>
+            <!-- Passo 1: benvenuto + test controller -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding IsStep0, Converter={StaticResource B2V}}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Body}">
+                        Benvenuto in <Run FontWeight="Bold">ControllerWarcraft</Run>! Questo assistente ti guida
+                        nella configurazione iniziale. Il mapping è sempre 1:1 (nessuna automazione).
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource Body}">
+                        Per prima cosa verifichiamo il controller: muovi gli stick, premi i grilletti e i pulsanti.
+                        Dovresti vederli reagire qui sotto. (Questo pannello legge soltanto: non invia alcun input al gioco.)
+                    </TextBlock>
+                    <Border BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <controls:ControllerTestView DataContext="{Binding ControllerTest}" />
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Passo 2: versione + preset di classe -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding IsStep1, Converter={StaticResource B2V}}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Body}">
+                        Scegli la versione di WoW che giochi. Verrà impostata come profilo attivo. Puoi cambiarla
+                        in seguito dall'editor.
+                    </TextBlock>
+                    <TextBlock Text="Versione / profilo" Style="{StaticResource H2}" />
+                    <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}"
+                              DisplayMemberPath="Name" MaxWidth="360" HorizontalAlignment="Left" />
+
+                    <TextBlock Text="Preset di classe (opzionale)" Style="{StaticResource H2}" Margin="0,16,0,6" />
+                    <TextBlock Style="{StaticResource Body}">
+                        Se vuoi, applica un preset di classe (warrior / mage / hunter) sopra il profilo: sovrascrive
+                        gli slot delle abilità e il radial con valori tarati sulla classe. Lascialo vuoto per usare
+                        il profilo di versione così com'è.
+                    </TextBlock>
+                    <ComboBox ItemsSource="{Binding ClassPresets}" SelectedItem="{Binding SelectedClassPreset}"
+                              DisplayMemberPath="Name" MaxWidth="360" HorizontalAlignment="Left" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Passo 3: keybinding in WoW -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding IsStep2, Converter={StaticResource B2V}}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Body}">
+                        Passo cruciale: l'app manda dei <Run FontWeight="Bold">tasti</Run>, ma è WoW a decidere quale
+                        abilità c'è su ogni tasto. Apri in gioco <Run FontWeight="Bold">Menu → Tasti (Keybindings)</Run>
+                        e lega gli slot dell'action bar a questi tasti:
+                    </TextBlock>
+                    <DataGrid ItemsSource="{Binding Keybindings}" AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" CanUserAddRows="False"
+                              HorizontalAlignment="Left">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Barra" Binding="{Binding Bar}" Width="Auto" />
+                            <DataGridTextColumn Header="Tasti" Binding="{Binding Keys}" Width="Auto" />
+                            <DataGridTextColumn Header="Layer controller" Binding="{Binding Note}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Style="{StaticResource Body}" Margin="0,10,0,0">
+                        Sono i default di molte configurazioni WoW. Se le tue differiscono, adatta i binding in gioco
+                        oppure il profilo dall'editor. I <Run FontWeight="Bold">layer</Run> si attivano tenendo premuti
+                        i grilletti dorsali LB e/o RB mentre premi il pulsante abilità.
+                    </TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Passo 4: UAC + modalità cursore -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding IsStep3, Converter={StaticResource B2V}}">
+                <StackPanel>
+                    <TextBlock Text="Prompt UAC / amministratore" Style="{StaticResource H2}" />
+                    <TextBlock Style="{StaticResource Body}">
+                        Quando avvii <Run FontWeight="Bold">cwapp.exe</Run> (il runtime che invia gli input) Windows
+                        mostrerà un <Run FontWeight="Bold">prompt UAC</Run>: <Run FontWeight="Bold">accettalo</Run>.
+                        Serve perché WoW gira spesso da amministratore (comune con i private server come Ascension) e
+                        Windows blocca l'invio di input da un processo non elevato verso una finestra elevata. Questo
+                        editor (<Run FontWeight="Bold">cwgui.exe</Run>) non richiede permessi da amministratore.
+                    </TextBlock>
+
+                    <TextBlock Text="Modalità cursore" Style="{StaticResource H2}" Margin="0,14,0,6" />
+                    <TextBlock Style="{StaticResource Body}">
+                        Oltre a movimento e camera, esiste una <Run FontWeight="Bold">modalità cursore</Run> per
+                        loot / vendor / talenti / mappa: lo stick destro muove un cursore, A = click sinistro,
+                        X = click destro.
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource Body}">
+                        Si attiva col pulsante <Run FontWeight="Bold">R3</Run> (click dello stick destro) in modalità
+                        <Run FontWeight="Bold">Toggle</Run>: una pressione entra, un'altra esce. Dall'editor puoi
+                        cambiare il pulsante (R3 / L3 / Start / <Run FontStyle="Italic">None</Run> per disattivarla) e la
+                        modalità (<Run FontWeight="Bold">Hold</Run> = attiva solo mentre tieni premuto). Se i click-stick
+                        ti partono per sbaglio, imposta un <Run FontWeight="Bold">hold minimo</Run> (~60-120 ms) nel
+                        pannello Hardening input.
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource Body}" Margin="0,10,0,0" Foreground="#2E7D32">
+                        Hai finito! Premi <Run FontWeight="Bold">Fine</Run> per salvare le scelte e iniziare.
+                    </TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -198,6 +198,28 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
   dopo la build su ogni push/PR verso `main`. Restano scoperti — perché richiedono XInput/SendInput
   o UI e non sono testabili headless — `MappingEngine`, l'App, la GUI e l'Overlay.
 
+- **Onboarding: wizard di primo avvio + test controller (post-Fase 4):** ✅ *Fatto.* Attrito
+  segnalato dai tester: (a) dimenticavano di impostare i keybinding dell'action bar in WoW; (b) non
+  sapevano del prompt UAC/admin; (c) si confondevano con la modalità cursore (R3). La GUI ora riduce
+  questi attriti dall'app stessa. Novità:
+  - **Lettore XInput condiviso di sola lettura** nel Core (`Input/XInputReader` +
+    `Input/ControllerReading`): fa P/Invoke di **esclusivamente** `XInputGetState`, nessun SendInput.
+    App e Gui lo condividono senza duplicare il P/Invoke; la Gui **non può** iniettare input perché
+    il Core non contiene alcun codice di output (SendInput resta esclusivo dell'App). L'App è stata
+    aggiornata per leggere via questo componente (il `GamepadPoller` mantiene la normalizzazione di
+    gioco), risolvendo l'accorpamento storico lettura+SendInput nel `NativeMethods` dell'App.
+  - **Pannello di test del controller (live)**: tab dedicato nella GUI (e primo passo del wizard) che
+    mostra in tempo reale stick, grilletti, D-pad e pulsanti (~60 Hz), con scelta dello slot XInput.
+    Strumento di verifica e troubleshooting; **solo lettura**.
+  - **Wizard di primo avvio**: mostrato automaticamente al primo lancio della GUI (settings.json
+    assente o `setupCompleted = false`) e riapribile da un pulsante. Passi: benvenuto + test
+    controller → scelta versione (+ preset di classe) salvata come profilo attivo → tabella dei
+    keybinding da impostare in WoW → avviso UAC/admin e spiegazione della modalità cursore.
+  - **Flag `setupCompleted`** in `AppSettings` (default false; assente ⇒ false ⇒ wizard mostrato una
+    volta): retro-compatibile con i `settings.json` esistenti.
+  - **Test aggiunti**: `ControllerReading.FromRaw` (normalizzazione pura raw→normalizzato), logica di
+    onboarding (`NeedsSetup`, retro-compat del flag, `MarkSetupCompleted`, contenuti informativi).
+
 ## 10. Rilascio & CI/CD
 
 Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:
@@ -284,6 +306,22 @@ Prese (Hardening input):
   invece di soglie separate — più semplice da spiegare e tarare. Default 0 = nessun cambiamento.
 - **Precedenza esplicita:** radial > cursore > funzione storica del pulsante, per evitare che due
   funzioni sullo stesso click-stick si attivino insieme.
+
+Prese (Onboarding — wizard + test controller):
+- **Lettore XInput nel Core, non nella Gui:** la lettura è un componente `XInputReader` di sola
+  lettura nel Core, con un DTO normalizzato `ControllerReading` la cui conversione (`FromRaw`) è pura
+  e testabile. Motivazione: condividere il P/Invoke tra App e Gui **senza** dare alla Gui la capacità
+  di iniettare input — il vincolo è garantito strutturalmente (nel Core non esiste SendInput), non
+  per convenzione. L'App riusa il lettore ma mantiene il suo `GamepadPoller` (deadzone/soglia di
+  gioco), quindi nessuna regressione sul runtime.
+- **Contenuti del wizard nel Core (`OnboardingInfo`):** `NeedsSetup`, la tabella dei keybinding WoW e
+  le versioni suggerite sono dati puri, testabili senza WPF e riusabili; la Gui resta una vista
+  sottile (WizardWindow + WizardViewModel).
+- **`setupCompleted` in `AppSettings`:** un semplice flag booleano (default false). Wizard mostrato
+  finché è false; *Fine* e *Salta* lo impostano a true. Retro-compatibile: assente ⇒ false ⇒ mostrato
+  una volta, senza toccare gli altri campi.
+- **Pannello riusato:** un unico `ControllerTestView` (UserControl) serve sia il tab della finestra
+  principale sia il primo passo del wizard; il polling parte/si ferma su Loaded/Unloaded.
 
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ControllerWarcraft.Core.Onboarding;
 using ControllerWarcraft.Core.Profiles;
 using ControllerWarcraft.Gui.Mvvm;
 
@@ -127,6 +128,31 @@ public sealed class MainViewModel : ObservableObject
     }
 
     public ObservableCollection<AbilityRowViewModel> Abilities { get; } = new();
+
+    // -------------------------------------------------------------- test controller (live, sola lettura)
+
+    /// <summary>Pannello di test del controller (tab "Test controller"). Legge il gamepad in sola lettura.</summary>
+    public ControllerTestViewModel ControllerTest { get; } = new();
+
+    // -------------------------------------------------------------- onboarding wizard
+
+    /// <summary>True se il wizard di primo avvio va mostrato automaticamente (setup non completato).</summary>
+    public bool NeedsSetup => OnboardingInfo.NeedsSetup(_manager.LoadSettings());
+
+    /// <summary>
+    /// Ricarica impostazioni e profili dopo la chiusura del wizard, così l'eventuale nuovo profilo
+    /// attivo/scelte del wizard sono subito riflesse nell'editor.
+    /// </summary>
+    public void ReloadAfterWizard()
+    {
+        _settings = _manager.LoadSettings();
+        OnPropertyChanged(nameof(ShowOverlay));
+        OnPropertyChanged(nameof(AutoSwitchEnabled));
+        OnPropertyChanged(nameof(PauseWhenGameNotForeground));
+        LoadSettingsIntoProcessMap();
+        RefreshClassPresetList();
+        RefreshProfileList();
+    }
 
     // -------------------------------------------------------------- radial menu (Fase 4)
 
