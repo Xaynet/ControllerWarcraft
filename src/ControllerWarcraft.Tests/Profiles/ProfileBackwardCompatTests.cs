@@ -86,6 +86,34 @@ public class ProfileBackwardCompatTests
     }
 
     [Fact]
+    public void OldStyleV10_Modifiers_DefaultToHistoricLB_RB()
+    {
+        var p = Deserialize(OldStyleV10);
+        Assert.NotNull(p.Modifiers);
+        // Un profilo privo del campo 'modifiers' usa LB/RB → comportamento layer identico a prima.
+        Assert.Equal(ModifierButton.LeftShoulder, p.Modifiers.Modifier1);
+        Assert.Equal(ModifierButton.RightShoulder, p.Modifiers.Modifier2);
+        // Nessuna abilità disabilitata (i grilletti restano abilità).
+        Assert.Empty(LayerModifiers.DisabledAbilities(p.Modifiers));
+    }
+
+    [Fact]
+    public void ExplicitModifiers_AreHonored()
+    {
+        const string json = """
+            {
+              "name": "TriggerMods",
+              "modifiers": { "modifier1": "LeftTrigger", "modifier2": "RightTrigger" }
+            }
+            """;
+        var p = Deserialize(json);
+        Assert.Equal(ModifierButton.LeftTrigger, p.Modifiers.Modifier1);
+        Assert.Equal(ModifierButton.RightTrigger, p.Modifiers.Modifier2);
+        Assert.True(LayerModifiers.IsAbilityDisabled(p.Modifiers, ActionButton.LeftTrigger));
+        Assert.True(LayerModifiers.IsAbilityDisabled(p.Modifiers, ActionButton.RightTrigger));
+    }
+
+    [Fact]
     public void OldStyleV10_RadialMenu_DefaultsToDisabled()
     {
         var p = Deserialize(OldStyleV10);
@@ -134,6 +162,8 @@ public class ProfileBackwardCompatTests
         Assert.Equal(0, p.InputHardening.ThumbClickMinHoldMs);
         Assert.Equal(CurveType.Linear, p.Mouselook.Curve.Type);
         Assert.False(p.RadialMenu.Enabled);
+        Assert.Equal(ModifierButton.LeftShoulder, p.Modifiers.Modifier1);
+        Assert.Equal(ModifierButton.RightShoulder, p.Modifiers.Modifier2);
         Assert.Empty(p.Abilities);
     }
 

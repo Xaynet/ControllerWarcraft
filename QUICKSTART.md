@@ -81,6 +81,9 @@ Apri `cwgui.exe` (tab **Editor profili**):
 - (Opzionale) applica un **preset di classe** (warrior / mage / hunter).
 - (Opzionale) regola **sensibilità** e **curva** del mouselook, deadzone,
   inversione asse Y, e le voci del **radial menu**.
+- (Opzionale) scegli i **pulsanti modificatori** dei layer (pannello *Modificatori di layer*):
+  default **LB/RB**, ma puoi usare **LT/RT** se li trovi più comodi. Se scegli un grilletto come
+  modificatore, quel grilletto **non spara più** la sua abilità (la GUI te lo segnala).
 - **Salva.**
 
 Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
@@ -107,7 +110,7 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 |---|---|---|
 | Stick sinistro | Movimento (WASD) | Movimento |
 | Stick destro | Camera (mouselook) | Cursore mouse |
-| **LB / RB / LB+RB** (tenuti) | Layer abilità (Shift / Ctrl / Shift+Ctrl) | — |
+| **LB / RB / LB+RB** (tenuti) *(modificatori configurabili)* | Layer abilità (Shift / Ctrl / Shift+Ctrl) | — |
 | A | Salto | Click sinistro |
 | X | Abilità 1 | Click destro |
 | B | Abilità 2 | Escape |
@@ -118,8 +121,12 @@ Il profilo attivo è in `%APPDATA%/ControllerWarcraft/settings.json`.
 | **R3** (click stick dx) | Attiva Cursore *(pulsante e modalità configurabili — o radial menu)* | Torna a Movimento |
 | BACK | Esci | Esci |
 
-- I **layer** si attivano **tenendo** LB e/o RB *mentre* premi il tasto abilità.
-  Priorità: **LB+RB > LB > RB > Base**.
+- I **layer** si attivano **tenendo** i due modificatori *mentre* premi il tasto abilità.
+  Priorità: **entrambi > mod1 > mod2 > Base**. **Modificatori configurabili** (pannello
+  *Modificatori di layer* in `cwgui.exe`): default **LB** (→ Shift) e **RB** (→ Ctrl); in
+  alternativa **LT/RT**. Se un grilletto è usato come modificatore, non spara più la sua abilità
+  (precedenza al ruolo di modificatore) e l'etichetta del layer nell'overlay riflette il pulsante
+  scelto (es. `+LT (Shift)`).
 - **Modalità cursore — attivazione configurabile** (da `cwgui.exe`, pannello *Cursore*):
   - **Pulsante**: default **R3**; puoi scegliere **L3**, **Start**, o **None** (disattiva del
     tutto la modalità cursore). Se scegli L3, L3 non fa più Tab-target.

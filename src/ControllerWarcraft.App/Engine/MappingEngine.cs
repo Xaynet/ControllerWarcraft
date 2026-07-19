@@ -20,6 +20,13 @@ public sealed class MappingEngine
     private readonly ControllerProfile _profile;
     private readonly InputEmulator _out;
 
+    // ---- Modificatori di layer configurabili (v1.4) ----
+    // Quali due pulsanti fisici fungono da "shift". Precomputati al caricamento del profilo:
+    // gli ActionButton consumati (se un modificatore è un grilletto) non sparano più come abilità.
+    private readonly ModifierSettings _mods;
+    private readonly bool _leftTriggerIsModifier;
+    private readonly bool _rightTriggerIsModifier;
+
     // Snapshot precedente, per l'edge-detection (reagire alla pressione, non a ogni tick).
     private GamepadSnapshot _prev = GamepadSnapshot.Disconnected;
 
@@ -73,6 +80,9 @@ public sealed class MappingEngine
     {
         _profile = profile;
         _out = emulator;
+        _mods = profile.Modifiers ?? new ModifierSettings();
+        _leftTriggerIsModifier = LayerModifiers.IsAbilityDisabled(_mods, ActionButton.LeftTrigger);
+        _rightTriggerIsModifier = LayerModifiers.IsAbilityDisabled(_mods, ActionButton.RightTrigger);
         _radial = profile.RadialMenu ?? new RadialMenuSettings();
         _radialLabels = _radial.Items.Select(i => string.IsNullOrWhiteSpace(i.Label) ? i.Bind.ToString() : i.Label).ToArray();
     }
@@ -268,7 +278,7 @@ public sealed class MappingEngine
             _out.MouseMove(dx, dy);
         }
 
-        // Layer attivo dai modificatori LB/RB (LB ha priorita').
+        // Layer attivo dai due pulsanti modificatori configurati (default LB/RB; mod1 ha priorita').
         UpdateLayer(s);
 
         // A = Salto (tap su edge).
@@ -295,21 +305,37 @@ public sealed class MappingEngine
 
     private void UpdateLayer(in GamepadSnapshot s)
     {
-        // Priorità: LB+RB (4° layer, Fase 3) > LB > RB > Base.
-        var layer = s.LeftShoulder && s.RightShoulder ? AbilityLayer.Shoulder_LBRB
-                  : s.LeftShoulder ? AbilityLayer.Shoulder_LB
-                  : s.RightShoulder ? AbilityLayer.Shoulder_RB
-                  : AbilityLayer.Base;
+        // Layer deciso dai DUE pulsanti configurati come modificatori (default LB/RB). La priorità
+        // (mod1 > mod2 > Base) e la semantica (mod1→Shoulder_LB, mod2→Shoulder_RB, entrambi→LBRB)
+        // vivono nella logica pura del Core.
+        bool m1 = ModifierHeld(_mods.Modifier1, s);
+        bool m2 = ModifierHeld(_mods.Modifier2, s);
+        var layer = LayerModifiers.ResolveLayer(m1, m2);
 
         if (layer != Layer)
         {
             Layer = layer;
-            OnStatus?.Invoke($"Layer: {LayerLabel(layer)}");
+            OnStatus?.Invoke($"Layer: {LayerModifiers.LayerLabel(layer, _mods)}");
         }
     }
 
+    /// <summary>Stato fisico del pulsante scelto come modificatore, letto dallo snapshot.</summary>
+    private static bool ModifierHeld(ModifierButton button, in GamepadSnapshot s) => button switch
+    {
+        ModifierButton.LeftShoulder => s.LeftShoulder,
+        ModifierButton.RightShoulder => s.RightShoulder,
+        ModifierButton.LeftTrigger => s.LeftTrigger,
+        ModifierButton.RightTrigger => s.RightTrigger,
+        _ => false,
+    };
+
     private void FireAbility(ActionButton btn, bool now, bool before)
     {
+        // Conflitto trigger-usato-come-modificatore: se questo grilletto è un modificatore, non spara
+        // come abilità (precedenza al ruolo di modificatore).
+        if (btn == ActionButton.LeftTrigger && _leftTriggerIsModifier) return;
+        if (btn == ActionButton.RightTrigger && _rightTriggerIsModifier) return;
+
         if (Pressed(now, before))
             _out.TapKeybind(_profile.Resolve(btn, Layer));
     }
@@ -387,12 +413,9 @@ public sealed class MappingEngine
         _ => m.ToString(),
     };
 
-    public static string LayerLabel(AbilityLayer l) => l switch
-    {
-        AbilityLayer.Base => "BASE (1-9)",
-        AbilityLayer.Shoulder_LB => "+LB (Shift)",
-        AbilityLayer.Shoulder_RB => "+RB (Ctrl)",
-        AbilityLayer.Shoulder_LBRB => "+LB+RB (Shift+Ctrl)",
-        _ => l.ToString(),
-    };
+    /// <summary>
+    /// Etichetta del layer che riflette i <b>pulsanti configurati</b> come modificatori (non più
+    /// "LB"/"RB" fissi). Delega alla logica pura del Core usando i modificatori di questo profilo.
+    /// </summary>
+    public string LayerLabel(AbilityLayer l) => LayerModifiers.LayerLabel(l, _mods);
 }

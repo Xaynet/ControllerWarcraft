@@ -8,6 +8,25 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Added
+- **Modificatori di layer configurabili**: ora si sceglie **quali due pulsanti fisici** fungono da
+  "shift" per i layer di abilità, invece del cablato LB/RB. Nuovo campo profilo `modifiers`
+  (`modifier1` → layer +Shift, `modifier2` → layer +Ctrl) tra `LeftShoulder` (LB), `RightShoulder`
+  (RB), `LeftTrigger` (LT), `RightTrigger` (RT). **Default `LeftShoulder`/`RightShoulder` = LB/RB =
+  comportamento storico**; i profili esistenti restano invariati. La semantica dei layer è la stessa
+  (mod1 → `Shoulder_LB`, mod2 → `Shoulder_RB`, entrambi → `Shoulder_LBRB`; priorità **mod1 > mod2 >
+  Base**) e la logica è **pura nel Core** (`LayerModifiers`).
+  - **Conflitto trigger-usato-come-modificatore**: se LT o RT è scelto come modificatore, non spara
+    più come pulsante di abilità (**precedenza al ruolo di modificatore**); l'engine lo ignora, la
+    button-legend lo omette e la GUI lo segnala con un avviso.
+  - Le **etichette dei layer** (indicatore modalità, legenda) riflettono ora i **pulsanti
+    configurati** (es. `+LT (Shift)` invece di `+LB (Shift)`), non più testo fisso.
+  - GUI: nuovo pannello *Modificatori di layer* (scelta dei due pulsanti + avviso di conflitto/config
+    ambigua).
+- **Prima schermata della GUI più chiara**: pannello introduttivo in cima all'editor che spiega
+  cos'è ControllerWarcraft e il **flusso d'uso** (1) scegli versione/profilo → 2) personalizza →
+  3) Salva → 4) avvia `cwapp.exe`, accetta UAC), chiarisce i due tab (*Editor profili* configura,
+  *Test controller* verifica in sola lettura) e che **la GUI configura soltanto** (non è il runtime).
+  Il pulsante per riaprire il **wizard di primo avvio** è ora evidente (in risalto nell'intestazione).
 - **Button-legend a layer (HUD)**: pannello overlay discreto, semi-trasparente e click-through che
   mostra cosa fa **ogni pulsante mappabile nel layer corrente** (es. `X → Shift+1`, `RT → Ctrl+4`),
   aggiornandosi quando si tiene premuto LB/RB (Base → +LB → +RB → +LB+RB). Aiuta a ricordare le
@@ -62,8 +81,9 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 - **CI**: la pipeline esegue ora `dotnet test` dopo la build su ogni push/PR verso `main`.
 
 ### Changed
-- Schema profilo a **v1.3**. I file v1.0/v1.1/v1.2 restano validi: i nuovi campi hanno default che
-  riproducono **esattamente** il comportamento precedente (cursore su R3 in Toggle, hold minimo 0).
+- Schema profilo a **v1.4**. I file v1.0/v1.1/v1.2/v1.3 restano validi: i nuovi campi hanno default
+  che riproducono **esattamente** il comportamento precedente (cursore su R3 in Toggle, hold minimo 0,
+  modificatori LB/RB).
 - Preset `ascension`/`classic`/`retail` aggiornati con i nuovi campi impostati al comportamento attuale.
 - **Refactor interno (nessun cambiamento di comportamento del runtime)**: la lettura XInput è stata
   estratta dal `NativeMethods` dell'App al `XInputReader` di sola lettura del Core; il `NativeMethods`
@@ -76,6 +96,8 @@ progetto aderisce al [Semantic Versioning](https://semver.org/lang/it/).
 - Se un pulsante è sia il trigger del **radial menu** sia quello di attivazione **cursore**, vince
   il radial. Se **L3** è usato per il cursore, non fa più Tab-target. L'hold minimo si applica a
   toggle/hold cursore, Tab-target e apertura del radial.
+- Se un **grilletto (LT/RT)** è scelto come **modificatore di layer**, il ruolo di modificatore ha la
+  **precedenza** su quello di abilità: quel grilletto non spara più il suo keybind di abilità.
 
 ## [0.1.1] - 2026-07-19
 

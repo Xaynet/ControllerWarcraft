@@ -104,6 +104,48 @@ public sealed class MainViewModel : ObservableObject
         set { _current.InputHardening.ThumbClickMinHoldMs = value; OnPropertyChanged(); }
     }
 
+    // -------------------------------------------------------------- modificatori di layer (v1.4)
+    // Quali due pulsanti fisici fungono da "shift" (default LB/RB). Se un grilletto (LT/RT) è scelto
+    // come modificatore, non spara più come abilità: lo segnaliamo con ModifierConflictWarning.
+
+    public ModifierButton Modifier1
+    {
+        get => _current.Modifiers.Modifier1;
+        set { _current.Modifiers.Modifier1 = value; OnPropertyChanged(); OnPropertyChanged(nameof(ModifierConflictWarning)); OnPropertyChanged(nameof(HasModifierWarning)); }
+    }
+
+    public ModifierButton Modifier2
+    {
+        get => _current.Modifiers.Modifier2;
+        set { _current.Modifiers.Modifier2 = value; OnPropertyChanged(); OnPropertyChanged(nameof(ModifierConflictWarning)); OnPropertyChanged(nameof(HasModifierWarning)); }
+    }
+
+    /// <summary>True se c'è un avviso da mostrare sui modificatori (conflitto trigger o scelta ambigua).</summary>
+    public bool HasModifierWarning => !string.IsNullOrEmpty(ModifierConflictWarning);
+
+    /// <summary>
+    /// Testo di avviso sui modificatori: segnala quando un grilletto usato come modificatore
+    /// disabilita la relativa abilità, o quando i due modificatori coincidono (config degenere).
+    /// Vuoto se la configurazione è pulita (es. il default LB/RB).
+    /// </summary>
+    public string ModifierConflictWarning
+    {
+        get
+        {
+            var mods = _current.Modifiers;
+            if (LayerModifiers.AreAmbiguous(mods))
+                return $"I due modificatori sono uguali ({LayerModifiers.ShortLabel(mods.Modifier1)}): non potrai ottenere i layer intermedi (+Mod1 / +Mod2), solo Base o entrambi. Scegli due pulsanti diversi.";
+
+            var disabled = LayerModifiers.DisabledAbilities(mods);
+            if (disabled.Count > 0)
+            {
+                var names = string.Join(", ", disabled.Select(a => LayerModifiers.ShortLabel(a == ActionButton.LeftTrigger ? ModifierButton.LeftTrigger : ModifierButton.RightTrigger)));
+                return $"Attenzione: {names} è usato come modificatore, quindi NON funziona più come pulsante di abilità (le righe {names} nella tabella sono ignorate a runtime).";
+            }
+            return "";
+        }
+    }
+
     // Binding di sistema editabili (Fase 3).
     public KeybindEditorViewModel? JumpBind { get => _jumpBind; private set => SetField(ref _jumpBind, value); }
     public KeybindEditorViewModel? TabTargetBind { get => _tabTargetBind; private set => SetField(ref _tabTargetBind, value); }
@@ -303,6 +345,10 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CursorActivationButton));
         OnPropertyChanged(nameof(CursorActivationMode));
         OnPropertyChanged(nameof(ThumbClickMinHoldMs));
+        OnPropertyChanged(nameof(Modifier1));
+        OnPropertyChanged(nameof(Modifier2));
+        OnPropertyChanged(nameof(ModifierConflictWarning));
+        OnPropertyChanged(nameof(HasModifierWarning));
         OnPropertyChanged(nameof(ProfileName));
         OnPropertyChanged(nameof(GameVersion));
         OnPropertyChanged(nameof(Description));

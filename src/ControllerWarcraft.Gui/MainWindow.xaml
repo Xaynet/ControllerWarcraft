@@ -46,6 +46,12 @@
                 <x:Type TypeName="prof:CursorActivationButton" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider x:Key="ModifierButtonValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="prof:ModifierButton" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <ObjectDataProvider x:Key="CursorModeValues" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="prof:CursorActivationMode" />
@@ -74,17 +80,30 @@
 
     <DockPanel Margin="12">
 
-        <!-- Toolbar applicazione: titolo + wizard -->
-        <Border DockPanel.Dock="Top" Padding="10,8" Margin="0,0,0,10"
+        <!-- Pannello introduttivo: cos'è l'app + flusso d'uso + wizard. Chiarisce la prima schermata. -->
+        <Border DockPanel.Dock="Top" Padding="14,12" Margin="0,0,0,10"
                 Background="#E8EAED" CornerRadius="6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center" FontWeight="Bold"
-                           Text="ControllerWarcraft — configuratore controller per WoW" />
-                <Button Grid.Column="1" Content="Wizard di primo avvio" MinWidth="170"
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock FontWeight="Bold" FontSize="15"
+                               Text="ControllerWarcraft — configuratore controller per WoW" />
+                    <TextBlock Foreground="#444" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Text="Gioca a World of Warcraft con un controller Xbox: l'app legge il pad ed emula tastiera e mouse (mapping 1:1, nessuna automazione). Questa finestra CONFIGURA soltanto i profili — non è il runtime e non invia input al gioco." />
+                    <TextBlock Foreground="#204020" TextWrapping="Wrap" Margin="0,6,0,0" FontWeight="SemiBold"
+                               Text="Come si usa:  1) Scegli la versione/profilo  →  2) Personalizza mappature e curve  →  3) Salva  →  4) Avvia cwapp.exe per giocare (accetta il prompt UAC/amministratore)." />
+                    <TextBlock Foreground="#555" TextWrapping="Wrap" Margin="0,6,0,0" FontSize="11"
+                               Text="Tab 'Editor profili': modifica e salva i profili.  Tab 'Test controller': verifica in sola lettura che il pad sia letto correttamente. Nuovo qui? Apri il wizard di primo avvio →" />
+                </StackPanel>
+
+                <Button Grid.Column="1" Content="🧭  Wizard di primo avvio" MinWidth="190" MinHeight="40"
+                        VerticalAlignment="Center" Margin="14,0,0,0" FontWeight="Bold"
+                        Background="#2E7D32" Foreground="White"
+                        ToolTip="Riapri la procedura guidata: test del pad, scelta versione, keybinding da impostare in WoW, avviso UAC."
                         Click="OpenWizard_Click" />
             </Grid>
         </Border>
@@ -206,6 +225,25 @@
                                             <Slider Minimum="0.2" Maximum="4" TickFrequency="0.1" IsSnapToTickEnabled="True"
                                                     Value="{Binding MouselookCurve.Exponent}" VerticalAlignment="Center" />
                                         </DockPanel>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <GroupBox Header="Modificatori di layer (i 'shift' del pad)">
+                                    <StackPanel>
+                                        <TextBlock Text="Quali due pulsanti fisici cambiano il layer di abilità. Default LB/RB (comportamento storico). Modificatore 1 → +Shift, Modificatore 2 → +Ctrl, entrambi → +Shift+Ctrl."
+                                                   Foreground="#777" TextWrapping="Wrap" Margin="0,0,0,4" FontSize="11" />
+                                        <TextBlock Text="Modificatore 1 (→ Shift)" Style="{StaticResource Label}" />
+                                        <ComboBox ItemsSource="{Binding Source={StaticResource ModifierButtonValues}}"
+                                                  SelectedItem="{Binding Modifier1}" />
+                                        <TextBlock Text="Modificatore 2 (→ Ctrl)" Style="{StaticResource Label}" />
+                                        <ComboBox ItemsSource="{Binding Source={StaticResource ModifierButtonValues}}"
+                                                  SelectedItem="{Binding Modifier2}" />
+                                        <Border Margin="0,8,0,0" Padding="8,6" CornerRadius="4" Background="#FFF4E5"
+                                                BorderBrush="#E0A030" BorderThickness="1"
+                                                Visibility="{Binding HasModifierWarning, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="{Binding ModifierConflictWarning}" TextWrapping="Wrap"
+                                                       Foreground="#8A5A00" FontSize="11" />
+                                        </Border>
                                     </StackPanel>
                                 </GroupBox>
 

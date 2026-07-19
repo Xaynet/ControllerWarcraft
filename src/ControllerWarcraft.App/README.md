@@ -27,9 +27,12 @@ in un'architettura modulare.
 
 - **Movimento + camera** — stick sx → WASD, stick dx → mouselook (RMB tenuto + delta mouse),
   con **curva di sensibilità** configurabile (Linear/Power/Exponential).
-- **Layer di abilità** — LB/RB come *shift*: ogni pulsante frontale/D-pad/grilletto ha **4 stati**
-  (Base, +LB, +RB, **+LB+RB**), mappati agli slot dell'action bar (1-9, Shift+1-9, Ctrl+1-9,
-  Shift+Ctrl+1-9). Priorità: LB+RB > LB > RB > Base.
+- **Layer di abilità** — due pulsanti *modificatori* come *shift*: ogni pulsante frontale/D-pad/
+  grilletto ha **4 stati** (Base, +mod1, +mod2, **+mod1+mod2**), mappati agli slot dell'action bar
+  (1-9, Shift+1-9, Ctrl+1-9, Shift+Ctrl+1-9). Priorità: mod1+mod2 > mod1 > mod2 > Base. I due
+  modificatori sono **configurabili** (default **LB/RB** = storico; in alternativa **LT/RT**). Se un
+  grilletto è scelto come modificatore, **non spara più** come abilità (precedenza al ruolo di
+  modificatore). Logica pura e testabile nel Core (`LayerModifiers`).
 - **Tab-target** — su L3 (click stick sinistro).
 - **Modalità cursore** — attivazione **configurabile** (default: toggle su R3, come da storico).
   Pulsante rimappabile (R3 / L3 / Start / *None* per disattivarla) e modalità **Toggle** o **Hold**
@@ -80,9 +83,9 @@ Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profile
 |---|---|---|
 | Stick sinistro | W / A / S / D (movimento) | W / A / S / D (movimento) |
 | Stick destro | Mouselook (RMB + delta mouse) | Cursore mouse virtuale |
-| **LB** (tenuto) | Modificatore layer → **+LB** (Shift) | — |
-| **RB** (tenuto) | Modificatore layer → **+RB** (Ctrl) | — |
-| **LB+RB** (tenuti) | Modificatore layer → **+LB+RB** (Shift+Ctrl) | — |
+| **Modificatore 1** (tenuto, default **LB**) | Modificatore layer → **+Shift** | — |
+| **Modificatore 2** (tenuto, default **RB**) | Modificatore layer → **+Ctrl** | — |
+| **Entrambi** (tenuti) | Modificatore layer → **+Shift+Ctrl** | — |
 | A | Salto (Space) | Click sinistro (tenuto → drag) |
 | X | Abilità (1 / Shift+1 / Ctrl+1 / Shift+Ctrl+1) | Click destro |
 | B | Abilità (2 / …) | Escape |
@@ -97,8 +100,10 @@ Dettagli su schema, posizioni e assunzioni: [`profiles/README.md`](../../profile
 | **R3** (click stick dx) | Attiva Cursore *(pulsante e modalità configurabili — o trigger radial)* | Torna a Movimento |
 | Back | Uscita pulita | Uscita pulita |
 
-> Il layer si sceglie **tenendo premuto** LB e/o RB mentre si preme il pulsante abilità.
-> Priorità: **LB+RB > LB > RB > Base**.
+> Il layer si sceglie **tenendo premuto** i due modificatori (default LB/RB) mentre si preme il
+> pulsante abilità. Priorità: **entrambi > mod1 > mod2 > Base**. I pulsanti modificatori sono
+> configurabili nel profilo (`modifiers`); se un grilletto è usato come modificatore, quella
+> colonna "Abilità" del grilletto è disattivata.
 
 ### Hardening input (attivazione cursore & pressioni accidentali)
 

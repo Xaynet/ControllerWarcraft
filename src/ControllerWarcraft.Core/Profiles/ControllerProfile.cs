@@ -21,10 +21,13 @@ public sealed class ControllerProfile
     /// v1.3 (Hardening input): attivazione cursore configurabile
     /// (<see cref="CursorSettings.ActivationButton"/> / <see cref="CursorSettings.ActivationMode"/>)
     /// e soglia di hold minimo (<see cref="InputHardening"/>) contro le pressioni accidentali di L3/R3.
-    /// I file v1.0/v1.1/v1.2 restano leggibili: i campi nuovi hanno default retro-compatibili
-    /// (cursore su R3 in Toggle, hold minimo 0) che riproducono <b>esattamente</b> il comportamento
-    /// precedente.</summary>
-    public string SchemaVersion { get; set; } = "1.3";
+    /// v1.4 (Modificatori configurabili): scelta di <i>quali</i> due pulsanti fisici fungono da
+    /// modificatori di layer (<see cref="Modifiers"/>). Default <c>LB</c>/<c>RB</c> = comportamento
+    /// storico.
+    /// I file v1.0/v1.1/v1.2/v1.3 restano leggibili: i campi nuovi hanno default retro-compatibili
+    /// (cursore su R3 in Toggle, hold minimo 0, modificatori LB/RB) che riproducono <b>esattamente</b>
+    /// il comportamento precedente.</summary>
+    public string SchemaVersion { get; set; } = "1.4";
 
     /// <summary>Nome leggibile del profilo (mostrato nella GUI e nella selezione).</summary>
     public string Name { get; set; } = "";
@@ -46,6 +49,13 @@ public sealed class ControllerProfile
 
     /// <summary>Binding "di sistema" gestiti direttamente dall'engine (salto, tab-target, annulla cursore).</summary>
     public SystemBindings System { get; set; } = new();
+
+    /// <summary>
+    /// Quali due pulsanti fisici fungono da modificatori di layer (il "shift" del pad). Default
+    /// LB/RB → comportamento storico; un profilo senza questo campo si comporta esattamente come prima.
+    /// Vedi <see cref="ModifierSettings"/> e <see cref="LayerModifiers"/>.
+    /// </summary>
+    public ModifierSettings Modifiers { get; set; } = new();
 
     /// <summary>Tabella delle abilita': ogni voce lega (pulsante fisico × layer) a un keybind di gioco.</summary>
     public List<AbilityBinding> Abilities { get; set; } = new();

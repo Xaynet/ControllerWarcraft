@@ -241,6 +241,32 @@ modalità cursore, macchina a stati delle modalità e **profili pronti per versi
     legenda attiva "solo con modificatore" in basso a destra, indicatore cursore attivo). Nessun
     cambiamento allo schema di profilo. Test di retro-compat dei settings inclusi.
 
+- **Modificatori di layer configurabili + chiarezza prima schermata (post-Fase 4):** ✅ *Fatto.* Due
+  attriti segnalati dai tester: (a) i modificatori dei layer erano cablati su **LB/RB** e non
+  configurabili (qualcuno preferisce LT/RT); (b) la prima schermata della GUI non spiegava a cosa
+  servisse. Interventi:
+  - **Quali due pulsanti fungono da modificatori è ora configurabile** nel profilo
+    (`modifiers.modifier1` → layer `Shoulder_LB`/Shift, `modifier2` → `Shoulder_RB`/Ctrl) tra LB, RB,
+    LT, RT. **Default LB/RB** ⇒ comportamento e profili esistenti **identici**. La semantica dei layer
+    è invariata (mod1 → Shoulder_LB, mod2 → Shoulder_RB, entrambi → Shoulder_LBRB; priorità
+    **mod1 > mod2 > Base**); i valori dell'enum `AbilityLayer` **non** cambiano nome (restano
+    identificatori interni per non rompere la serializzazione). La logica è **pura nel Core**
+    (`LayerModifiers`: risoluzione layer, etichette, conflitti), il `MappingEngine` legge i pulsanti
+    configurati invece di LB/RB fissi.
+  - **Conflitto trigger-usato-come-modificatore**: se LT/RT è un modificatore non può più essere un
+    pulsante di abilità. **Precedenza: ruolo di modificatore > ruolo di abilità** — l'engine non fa
+    sparare quell'abilità, la button-legend omette il grilletto, la GUI segnala l'utente (avviso nel
+    pannello *Modificatori*). LB/RB non hanno un `ActionButton` corrispondente ⇒ nessun conflitto.
+  - **Etichette coerenti**: le stringhe che citavano "LB"/"RB" (etichetta del layer nell'indicatore
+    di modalità e nella legenda) riflettono ora i **pulsanti configurati** (es. `+LT (Shift)`).
+  - **Prima schermata della GUI**: pannello introduttivo che spiega cos'è l'app e il **flusso**
+    (scegli profilo → personalizza → Salva → avvia `cwapp.exe`/UAC), chiarisce i due tab e che la GUI
+    **configura soltanto**; pulsante del **wizard** reso evidente. Nessuna logica pesante nella vista.
+  - **Test**: risoluzione layer (verità storica), default = comportamento storico, LT/RT come
+    modificatori (layer corretto + abilità del trigger disabilitata), etichette coerenti, legenda che
+    omette il grilletto-modificatore, retro-compatibilità (profilo senza `modifiers` ⇒ LB/RB). Schema
+    profilo a **v1.4**, retro-compatibile con v1.0–v1.3.
+
 ## 10. Rilascio & CI/CD
 
 Il rilascio è automatizzato via **GitHub Actions**, guidato dai **tag git** SemVer:
@@ -359,6 +385,24 @@ Prese (Overlay: button-legend + indicatore cursore):
 - **Config nei settings globali, non nel profilo:** le opzioni UX (on/off, visibilità, angolo,
   indicatore cursore) stanno in `AppSettings` accanto a `ShowOverlay`, non nello schema di profilo:
   sono preferenze di presentazione, non parte del mapping. Nessun bump dello schema di profilo.
+
+Prese (Modificatori configurabili + chiarezza GUI):
+- **I modificatori sono parte del mapping ⇒ nel profilo (non nei settings):** `modifiers` sta nello
+  schema di `ControllerProfile` (a differenza delle opzioni di presentazione dell'overlay), perché
+  determina *come si producono i keybind*. Un nuovo enum `ModifierButton` (LB/RB/LT/RT) evita di
+  riusare `ActionButton` (che non contiene LB/RB) e tiene distinti i due concetti.
+- **Logica pura nel Core (`LayerModifiers`):** risoluzione del layer, etichette e conflitti sono
+  funzioni pure e testabili; il `MappingEngine` si limita a leggere lo stato dei due pulsanti
+  configurati e a delegare. Gli identificatori dell'enum `AbilityLayer` restano invariati
+  (`Shoulder_LB`/`Shoulder_RB`/`Shoulder_LBRB`) per non rompere i profili serializzati: sono nomi
+  interni, l'etichetta *visibile* è quella derivata dai pulsanti configurati.
+- **Precedenza modificatore > abilità (documentata):** un grilletto scelto come modificatore perde il
+  ruolo di abilità. La scelta evita ambiguità (un LT non può essere insieme "shift" e "abilità 5") ed
+  è precomputata una volta al caricamento del profilo (nessun costo per-tick). La GUI la rende
+  esplicita con un avviso; segnala anche la config degenere mod1==mod2.
+- **Chiarezza prima schermata senza stravolgere il layout:** un pannello introduttivo testuale in
+  cima all'editor (nessuna logica nella vista) spiega scopo, flusso e ruolo dei due tab; il pulsante
+  del wizard è messo in risalto. Coerente col vincolo "GUI configura soltanto".
 
 Ancora aperte:
 - Interception driver (kernel) al posto di SendInput dove serve maggiore robustezza.

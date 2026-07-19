@@ -13,6 +13,12 @@ ed è costruita sullo stack consigliato in [§6](../../ANALISI.md) (C#/.NET + WP
 La finestra è organizzata in due tab — **Editor profili** e **Test controller** — più un
 **wizard di primo avvio** riapribile dal pulsante *Wizard di primo avvio*.
 
+In cima alla finestra un **pannello introduttivo** spiega cos'è ControllerWarcraft e il **flusso
+d'uso** (1) scegli versione/profilo → 2) personalizza → 3) Salva → 4) avvia `cwapp.exe`, accetta
+UAC), chiarisce che i due tab servono a **configurare** (*Editor profili*) e a **verificare in sola
+lettura** (*Test controller*), e ricorda che questa GUI **configura soltanto** (non è il runtime).
+Il pulsante del wizard è in risalto nell'intestazione.
+
 ## Wizard di primo avvio
 
 Compare **automaticamente al primo lancio** (quando manca `settings.json` o il flag
@@ -50,7 +56,11 @@ sbagliato). È possibile selezionare lo **slot XInput** (0-3).
   (R3/L3/Start/None) e la **modalità** (Toggle/Hold); nel pannello *Hardening input* imposti l'**hold
   minimo** (ms) che scarta le pressioni accidentali di L3/R3. Default = comportamento storico.
 - **Editing mappature** — tabella `(pulsante × layer) → keybind` completamente editabile, con i
-  **4 layer** (Base/+LB/+RB/+LB+RB); aggiungi/rimuovi righe, cambia tasto e modificatori.
+  **4 layer** (Base/+mod1/+mod2/+mod1+mod2); aggiungi/rimuovi righe, cambia tasto e modificatori.
+- **Modificatori di layer configurabili** — pannello *Modificatori di layer*: scegli **quali due
+  pulsanti** fungono da "shift" (default **LB/RB**; in alternativa **LT/RT**). Se scegli un grilletto
+  come modificatore, la GUI **avvisa** che quel grilletto non funziona più come pulsante di abilità
+  (precedenza al ruolo di modificatore); avvisa anche se i due modificatori coincidono.
 - **Editing binding di sistema** (Fase 3) — Salto / Tab-target / Annulla ora modificabili.
 - **Impostazioni globali** (Fase 3) — overlay on/off, auto-switch profilo e mappa
   `processo → profilo`, con salvataggio in `settings.json`.

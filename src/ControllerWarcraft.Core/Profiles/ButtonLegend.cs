@@ -116,6 +116,10 @@ public static class ButtonLegend
         var rows = new List<ButtonLegendRow>(ButtonOrder.Count);
         foreach (var button in ButtonOrder)
         {
+            // Un grilletto usato come modificatore di layer non è più un pulsante di abilità: non
+            // spara nulla, quindi non compare nella legenda (riflette i pulsanti configurati).
+            if (LayerModifiers.IsAbilityDisabled(profile.Modifiers, button)) continue;
+
             var bind = profile.Resolve(button, layer);
             if (!includeUnmapped && bind.IsNone) continue;
             rows.Add(new ButtonLegendRow(button, ButtonLabel(button), bind));

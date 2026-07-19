@@ -122,7 +122,8 @@ if (companionEnabled)
 Console.WriteLine("ControllerWarcraft — App (Fase 3: UX)");
 Console.WriteLine($"Profilo: {profile.Name}  [versione gioco: {profile.GameVersion}]");
 Console.WriteLine("Collega un controller Xbox. Apri WoW (o Blocco note per un test sicuro).");
-Console.WriteLine("R3=attiva cursore (configurabile) · L3=Tab-target · LB/RB/LB+RB=layer abilita' · BACK=esci.");
+Console.WriteLine($"R3=attiva cursore (configurabile) · L3=Tab-target · " +
+                  $"{LayerModifiers.ShortLabel(profile.Modifiers.Modifier1)}/{LayerModifiers.ShortLabel(profile.Modifiers.Modifier2)}=layer abilita' · BACK=esci.");
 Console.WriteLine($"Overlay: {(overlay?.IsRunning == true ? "attivo" : "disattivo")} · " +
                   $"Auto-switch: {(autoSwitch ? "attivo" : "disattivo")} · " +
                   $"Radial: {(host.RadialUsable ? "attivo (tieni premuto il trigger)" : "disattivo")}");
@@ -244,7 +245,7 @@ static void PushOverlay(ModeOverlayController? overlay, EngineHost host, bool pa
     overlay.Update(new OverlayState(
         mode,
         MappingEngine.ModeLabel(host.Mode),
-        MappingEngine.LayerLabel(host.Layer),
+        LayerModifiers.LayerLabel(host.Layer, host.Profile.Modifiers),
         paused,
         host.ProfileName,
         companion?.ShortLabel ?? "",
@@ -276,7 +277,7 @@ static void PushLegend(ModeOverlayController? overlay, EngineHost host, AppSetti
 
     overlay.UpdateLegend(new LegendOverlayState(
         visible,
-        MappingEngine.LayerLabel(host.Layer),
+        LayerModifiers.LayerLabel(host.Layer, host.Profile.Modifiers),
         MapCorner(settings.LegendCorner),
         rows));
 }
